@@ -1,36 +1,43 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:ColorfulVoice.Controls"
+        xmlns:views="using:ColorfulVoice.Views"
         x:Class="ColorfulVoice.MainWindow"
         Title="ColorfulVoice — 钢琴卷帘"
         Width="1080" Height="640"
-        MinWidth="720" MinHeight="420"
-        Background="#0E0E14">
+        MinWidth="360" MinHeight="480"
+        Background="#FFFFFF">
 
-  <Grid RowDefinitions="Auto,*,Auto" Margin="16">
-    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
-      <StackPanel Spacing="2">
-        <TextBlock Text="ColorfulVoice" FontSize="22" FontWeight="SemiBold" Foreground="#F2F2F7" />
+  <Grid>
+    <views:HomeView x:Name="Home" />
+
+    <Grid x:Name="Editor" RowDefinitions="Auto,*,Auto" Margin="16" IsVisible="False">
+    <Grid x:Name="HeaderGrid" Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto" Margin="0,0,0,10">
+      <StackPanel x:Name="TitleBlock" Spacing="2">
+        <TextBlock Text="ColorfulVoice" FontSize="22" FontWeight="SemiBold" Foreground="#15151C" />
         <TextBlock x:Name="SubtitleText"
                    Text="NanoFish 引擎握手验证"
-                   FontSize="12" Foreground="#8E8E9A" />
+                   FontSize="12" Foreground="#6E6E7A" />
       </StackPanel>
-      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+      <WrapPanel x:Name="Toolbar" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+        <Button x:Name="BackButton" Content="‹ 主页" Click="OnBackClick" Padding="12,6" />
+        <Button x:Name="PlayButton" Content="▶ 预览" Click="OnPlayClick" Padding="12,6" />
+        <Button x:Name="ExportButton" Content="导出 WAV" Click="OnExportClick" Padding="12,6" />
         <Button x:Name="OpenUstButton" Content="打开 UST…" Click="OnOpenUstClick" Padding="12,6" />
-        <TextBlock VerticalAlignment="Center"
-                   FontSize="12" Foreground="#4FD1C5"
+        <TextBlock x:Name="BadgeText" VerticalAlignment="Center"
+                   FontSize="12" Foreground="#5B6FC4"
                    Text="Skia 自绘 · 零拷贝 PCM" />
-      </StackPanel>
+      </WrapPanel>
     </Grid>
 
     <TabControl Grid.Row="1" Padding="0">
       <TabItem Header="钢琴卷帘">
-        <Border CornerRadius="8" ClipToBounds="True" BorderBrush="#22222E" BorderThickness="1">
+        <Border CornerRadius="8" ClipToBounds="True" BorderBrush="#E4E6EF" BorderThickness="1">
           <controls:PianoRoll x:Name="Roll" />
         </Border>
       </TabItem>
       <TabItem Header="波形">
-        <Border CornerRadius="8" ClipToBounds="True" BorderBrush="#22222E" BorderThickness="1">
+        <Border CornerRadius="8" ClipToBounds="True" BorderBrush="#E4E6EF" BorderThickness="1">
           <controls:WaveformView x:Name="Waveform" />
         </Border>
       </TabItem>
@@ -38,7 +45,8 @@
 
     <TextBlock x:Name="StatusText" Grid.Row="2"
                Margin="0,10,0,0"
-               FontSize="12" Foreground="#8E8E9A"
+               FontSize="12" Foreground="#6E6E7A"
                Text="正在调用 NanoFish…" />
+    </Grid>
   </Grid>
 </Window>

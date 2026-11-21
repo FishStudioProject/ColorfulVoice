@@ -69,6 +69,19 @@ public static class NanoFish
     public static string LastError =>
         Marshal.PtrToStringUTF8(NativeMethods.nanofish_last_error()) ?? string.Empty;
 
+    /// <summary>调用 Rust 渲染整首 UST 为 PCM；返回的缓冲区由调用方 Dispose。</summary>
+    public static AudioBuffer RenderUst(string ustPath, string otoPath, string voiceDir,
+        uint sampleRate = 48_000)
+    {
+        var status = (NfStatus)NativeMethods.nanofish_render_ust(
+            ustPath, otoPath, voiceDir, sampleRate, out var native);
+        if (status != NfStatus.Ok)
+        {
+            throw new NanoFishException(status, LastError);
+        }
+        return new AudioBuffer(native);
+    }
+
     /// <summary>生成单声道正弦波，返回的缓冲区由调用方 Dispose。</summary>
     public static AudioBuffer GenerateSine(float frequencyHz, uint sampleRate = 48_000, uint durationMs = 100)
     {

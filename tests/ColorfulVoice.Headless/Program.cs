@@ -11,6 +11,11 @@ if (args.Contains("--self-test"))
     return SelfTest();
 }
 
+if (args.Contains("--audio-test"))
+{
+    return AudioTest();
+}
+
 var path = args.Length > 0 ? args[0] : "phase0-window.png";
 
 AppBuilder.Configure<App>()
@@ -19,11 +24,27 @@ AppBuilder.Configure<App>()
     .WithInterFont()
     .SetupWithoutStarting();
 
-var window = new MainWindow { Width = 1080, Height = 640 };
+var width = 1080.0;
+var height = 640.0;
+var sizeIndex = Array.IndexOf(args, "--size");
+if (sizeIndex >= 0 && sizeIndex + 1 < args.Length)
+{
+    var parts = args[sizeIndex + 1].Split('x');
+    if (parts.Length == 2 && double.TryParse(parts[0], out var w) && double.TryParse(parts[1], out var h))
+    {
+        width = w;
+        height = h;
+    }
+}
+var window = new MainWindow { Width = width, Height = height };
 window.Show();
 if (args.Length > 1)
 {
     window.OpenUst(args[1]);
+}
+if (args.Length > 2 && long.TryParse(args[2], out var seekTick))
+{
+    window.SeekPreview(seekTick);
 }
 
 // 推进布局 + 渲染定时器，确保绘制真的发生
@@ -81,6 +102,37 @@ static int SelfTest()
     Check(layout.XToTick(160) == before, "缩放时光标下的 tick 不变");
     Check(layout.PixelsPerTick > 0.2, "缩放确实放大了");
 
+    // 120 BPM：1 拍 = 0.5s = 480 tick
+    Check(Math.Abs(PianoRollLayout.TicksForMs(500, 120) - 480) < 0.5, "播放头推进：500ms @ 120BPM = 480 tick");
+    Check(Math.Abs(PianoRollLayout.TicksForMs(1000, 60) - 480) < 0.5, "播放头推进：1s @ 60BPM = 480 tick");
+
     Console.WriteLine(failures == 0 ? "钢琴卷帘几何自检通过" : $"{failures} 项失败");
     return failures == 0 ? 0 : 1;
+}
+
+static int AudioTest()
+{
+    var root = "/root/workspace/NovaVoice/NanoFish/tests/data";
+    var ust = Path.Combine(root, "demo.ust");
+    var oto = Path.Combine(root, "voicebank", "oto.ini");
+    var dir = Path.Combine(root, "voicebank");
+
+    using var buffer = NanoFish.Interop.NanoFish.RenderUst(ust, oto, dir);
+    Console.WriteLine($"渲染: {buffer.Length} 帧 @ {buffer.SampleRate} Hz (RMS {buffer.Rms():F3})");
+
+    using var player = new NanoFish.Interop.AudioPlayback();
+    Console.WriteLine($"后端: {(player.IsNullBackend ? "null（无声卡）" : "真实设备")}");
+    player.Load(buffer.Samples);
+    player.Start();
+    Thread.Sleep(400);
+    player.Pump();
+    Console.WriteLine($"已播: {player.PositionSeconds:F3}s  队列: {player.QueuedFrames} 帧");
+
+    if (player.PositionSeconds <= 0.01)
+    {
+        Console.Error.WriteLine("播放位置没有推进");
+        return 1;
+    }
+    Console.WriteLine("音频链路 OK");
+    return 0;
 }

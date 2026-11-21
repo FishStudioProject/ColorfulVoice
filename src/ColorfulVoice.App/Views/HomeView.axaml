@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ColorfulVoice.Views.HomeView"
+             Background="#FFFFFF">
+
+  <UserControl.Styles>
+    <Style Selector="Button.home">
+      <Setter Property="Height" Value="76" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Background" Value="#7C8FD8" />
+      <Setter Property="Foreground" Value="#101018" />
+      <Setter Property="FontSize" Value="22" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Padding" Value="26,0" />
+    </Style>
+    <Style Selector="Button.home:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#93A5E8" />
+    </Style>
+    <Style Selector="TextBlock.title">
+      <Setter Property="Foreground" Value="#15151C" />
+      <Setter Property="FontWeight" Value="Light" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid>
+    <!-- 宽屏：左标题、右按钮 -->
+    <Grid x:Name="WideRoot" ColumnDefinitions="*,Auto" RowDefinitions="*,Auto" Margin="56,44,56,28">
+      <StackPanel VerticalAlignment="Center" Spacing="6">
+        <TextBlock x:Name="WideTitle" Classes="title" Text="ColorfulVoice" FontSize="62" />
+        <TextBlock Text="0.1.0 Preview" FontSize="20" Foreground="#6E6E7A" Margin="6,0,0,0" />
+      </StackPanel>
+
+      <StackPanel Grid.Column="1" Width="380" Spacing="16" VerticalAlignment="Center">
+        <Button Classes="home" Content="＋  创建新作品" Click="OnNewClick" />
+        <Button Classes="home" Content="＝  继续项目" Click="OnContinueClick" />
+        <Button Classes="home" Content="↓  导入项目" Click="OnImportClick" />
+      </StackPanel>
+
+      <Border Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Center"
+              Background="#F2F3F7" BorderBrush="#E3E5EE" BorderThickness="1"
+              CornerRadius="28" Padding="26,12" Margin="0,24,0,0">
+        <StackPanel Orientation="Horizontal" Spacing="26">
+          <TextBlock Text="⌂" FontSize="18" Foreground="#5B6FC4" />
+          <TextBlock Text="♪" FontSize="18" Foreground="#9A9AA6" />
+          <TextBlock Text="☰" FontSize="18" Foreground="#9A9AA6" />
+          <TextBlock Text="⚙" FontSize="18" Foreground="#9A9AA6" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <!-- 窄屏 / 移动端：标题在上，按钮竖排铺满 -->
+    <Grid x:Name="CompactRoot" IsVisible="False" RowDefinitions="Auto,Auto,*,Auto" Margin="28,44,28,20">
+      <StackPanel Spacing="4">
+        <TextBlock x:Name="CompactTitle" Classes="title" Text="ColorfulVoice" FontSize="48" />
+        <TextBlock Text="0.1.0 Preview" FontSize="18" Foreground="#6E6E7A" Margin="4,0,0,0" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="1" Spacing="16" Margin="0,40,0,0">
+        <Button Classes="home" Height="84" Content="＋  创建新作品" Click="OnNewClick" />
+        <Button Classes="home" Height="84" Content="＝  继续项目" Click="OnContinueClick" />
+        <Button Classes="home" Height="84" Content="↓  导入项目" Click="OnImportClick" />
+      </StackPanel>
+
+      <Border Grid.Row="3" HorizontalAlignment="Center"
+              Background="#F2F3F7" BorderBrush="#E3E5EE" BorderThickness="1"
+              CornerRadius="28" Padding="26,12" Margin="0,24,0,0">
+        <StackPanel Orientation="Horizontal" Spacing="26">
+          <TextBlock Text="⌂" FontSize="18" Foreground="#5B6FC4" />
+          <TextBlock Text="♪" FontSize="18" Foreground="#9A9AA6" />
+          <TextBlock Text="☰" FontSize="18" Foreground="#9A9AA6" />
+          <TextBlock Text="⚙" FontSize="18" Foreground="#9A9AA6" />
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

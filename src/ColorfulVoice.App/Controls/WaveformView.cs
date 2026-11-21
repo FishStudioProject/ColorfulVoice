@@ -19,9 +19,9 @@ public sealed class WaveformView : Control
     public static readonly StyledProperty<int> VisibleSamplesProperty =
         AvaloniaProperty.Register<WaveformView, int>(nameof(VisibleSamples));
 
-    private static readonly IBrush Background = new SolidColorBrush(Color.Parse("#12121A"));
-    private static readonly IBrush WaveBrush = new SolidColorBrush(Color.Parse("#4FD1C5"));
-    private static readonly IBrush CenterBrush = new SolidColorBrush(Color.Parse("#2A2A38"));
+    private static readonly IBrush Background = new SolidColorBrush(Color.Parse("#FFFFFF"));
+    private static readonly IBrush WaveBrush = new SolidColorBrush(Color.Parse("#2BAE9F"));
+    private static readonly IBrush CenterBrush = new SolidColorBrush(Color.Parse("#E4E6EF"));
     private static readonly Pen WavePen = new(WaveBrush, 1);
     private static readonly Pen CenterPen = new(CenterBrush, 1);
 

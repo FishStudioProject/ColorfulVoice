@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace ColorfulVoice.Controls;
 
@@ -20,19 +21,22 @@ namespace ColorfulVoice.Controls;
 /// </summary>
 public sealed class PianoRoll : Control
 {
-    private static readonly IBrush Background = new SolidColorBrush(Color.Parse("#0D0D14"));
-    private static readonly IBrush RowWhite = new SolidColorBrush(Color.Parse("#16161F"));
-    private static readonly IBrush RowBlack = new SolidColorBrush(Color.Parse("#111119"));
-    private static readonly IBrush KeyboardWhite = new SolidColorBrush(Color.Parse("#E8E8F0"));
-    private static readonly IBrush KeyboardBlack = new SolidColorBrush(Color.Parse("#1A1A24"));
-    private static readonly IBrush KeyLabel = new SolidColorBrush(Color.Parse("#6C6C7A"));
-    private static readonly IBrush NoteFill = new SolidColorBrush(Color.Parse("#4FD1C5"));
+    private static readonly IBrush Background = new SolidColorBrush(Color.Parse("#FBFBFD"));
+    private static readonly IBrush RowWhite = new SolidColorBrush(Color.Parse("#FFFFFF"));
+    private static readonly IBrush RowBlack = new SolidColorBrush(Color.Parse("#F1F2F7"));
+    private static readonly IBrush KeyboardWhite = new SolidColorBrush(Color.Parse("#FFFFFF"));
+    private static readonly IBrush KeyboardBlack = new SolidColorBrush(Color.Parse("#2B2B36"));
+    private static readonly IBrush KeyLabel = new SolidColorBrush(Color.Parse("#8A8A96"));
+    private static readonly IBrush NoteFill = new SolidColorBrush(Color.Parse("#7C8FD8"));
     private static readonly IBrush NoteSelected = new SolidColorBrush(Color.Parse("#F2B35C"));
-    private static readonly IBrush NoteText = new SolidColorBrush(Color.Parse("#0B0B10"));
-    private static readonly Pen GridPen = new(new SolidColorBrush(Color.Parse("#1E1E2A")), 1);
-    private static readonly Pen BeatPen = new(new SolidColorBrush(Color.Parse("#2C2C3C")), 1);
-    private static readonly Pen BarPen = new(new SolidColorBrush(Color.Parse("#3E3E54")), 1.5);
-    private static readonly Pen EdgePen = new(new SolidColorBrush(Color.Parse("#0A0A0F")), 2);
+    private static readonly IBrush NoteText = new SolidColorBrush(Color.Parse("#FFFFFF"));
+    private static readonly IBrush NoteTextOnSelected = new SolidColorBrush(Color.Parse("#101018"));
+    private static readonly Pen GridPen = new(new SolidColorBrush(Color.Parse("#E9EAF1")), 1);
+    private static readonly Pen BeatPen = new(new SolidColorBrush(Color.Parse("#DCDEE9")), 1);
+    private static readonly Pen BarPen = new(new SolidColorBrush(Color.Parse("#C6CAD9")), 1.5);
+    private static readonly IBrush RulerText = new SolidColorBrush(Color.Parse("#8A8A96"));
+    private static readonly Pen PlayheadPen = new(new SolidColorBrush(Color.Parse("#F2B35C")), 1.5);
+    private static readonly Pen EdgePen = new(new SolidColorBrush(Color.Parse("#5A5A6A")), 2);
 
     public static readonly StyledProperty<IReadOnlyList<PianoNote>> NotesProperty =
         AvaloniaProperty.Register<PianoRoll, IReadOnlyList<PianoNote>>(nameof(Notes), Array.Empty<PianoNote>());
@@ -59,10 +63,15 @@ public sealed class PianoRoll : Control
     private readonly Stack<Snapshot> _undo = new();
     private readonly Stack<Snapshot> _redo = new();
     private static List<PianoNote> _clipboard = new();
-    private static readonly IBrush SelectionFill = new SolidColorBrush(Color.Parse("#334FD1C5"));
-    private static readonly Pen SelectionPen = new(new SolidColorBrush(Color.Parse("#4FD1C5")), 1.5);
+    private static readonly IBrush SelectionFill = new SolidColorBrush(Color.Parse("#337C8FD8"));
+    private static readonly Pen SelectionPen = new(new SolidColorBrush(Color.Parse("#7C8FD8")), 1.5);
 
     private sealed record Snapshot(List<PianoNote> Notes, List<int> SelectedIds);
+
+    public PianoRoll()
+    {
+        _timer.Tick += OnTimerTick;
+    }
 
     static PianoRoll()
     {
@@ -78,6 +87,17 @@ public sealed class PianoRoll : Control
     }
 
     public PianoNote? Selected { get; private set; }
+
+    /// <summary>工程 BPM，播放头推进用。</summary>
+    public double Tempo { get; set; } = 120.0;
+
+    /// <summary>播放头位置（tick）。</summary>
+    public long PlayheadTick { get; private set; }
+
+    public bool IsPlaying => _timer.IsEnabled;
+
+    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(16) };
+    private DateTime _lastTick = DateTime.UtcNow;
 
     /// <summary>网格吸附粒度（tick）：默认 1/4 拍。</summary>
     public long SnapTicks
@@ -120,6 +140,19 @@ public sealed class PianoRoll : Control
         DrawGrid(context, w, h);
         DrawNotes(context, w, h);
         DrawKeyboard(context, h);
+        // 小节号 + 播放头
+        var barTicks = _layout.SnapTicks * 16;
+        var firstBar = Math.Max(0, _layout.XToTick(_layout.KeyboardWidth) / barTicks * barTicks);
+        for (var t = firstBar; t <= _layout.XToTick(w); t += barTicks)
+        {
+            context.DrawText(GetText($"{(t / barTicks) + 1}", 9, RulerText), new Point(_layout.TickToX(t) + 3, 2));
+        }
+        var px = _layout.TickToX(PlayheadTick);
+        if (px >= _layout.KeyboardWidth && px <= w)
+        {
+            context.DrawLine(PlayheadPen, new Point(px, 0), new Point(px, h));
+        }
+
         if (_mode == DragMode.BoxSelect && _box.Width > 0 && _box.Height > 0)
         {
             context.DrawRectangle(SelectionFill, SelectionPen, _box);
@@ -195,7 +228,7 @@ public sealed class PianoRoll : Control
 
             if (width > 18)
             {
-                var text = GetText(n.Lyric);
+                var text = GetText(n.Lyric, 11, _selection.Contains(n) ? NoteTextOnSelected : NoteText);
                 if (text.Width < width - 10)
                 {
                     context.DrawText(text, new Point(x + 5, y + (_layout.RowHeight - text.Height) / 2));
@@ -214,7 +247,7 @@ public sealed class PianoRoll : Control
     private void DrawKeyboard(DrawingContext context, double h)
     {
         var kw = _layout.KeyboardWidth;
-        context.FillRectangle(new SolidColorBrush(Color.Parse("#0A0A10")), new Rect(0, 0, kw, h));
+        context.FillRectangle(new SolidColorBrush(Color.Parse("#F4F5F9")), new Rect(0, 0, kw, h));
 
         var topNote = _layout.TopNote;
         var rows = (int)Math.Ceiling((h + _layout.ScrollY) / _layout.RowHeight) + 1;
@@ -504,9 +537,61 @@ public sealed class PianoRoll : Control
         e.Handled = true;
     }
 
+    /// <summary>把播放头移到指定 tick（用于调试与截图）。</summary>
+    public void Seek(long tick)
+    {
+        PlayheadTick = Math.Max(0, tick);
+        InvalidateVisual();
+    }
+
+    /// <summary>开始 / 暂停预览（目前只有播放头，音频输出在 Phase 2.4）。</summary>
+    public void TogglePlayback()
+    {
+        if (_timer.IsEnabled)
+        {
+            _timer.Stop();
+            InvalidateVisual();
+            return;
+        }
+        var end = Notes.Count == 0 ? 0 : Notes.Max(n => n.EndTick);
+        if (end <= 0 || PlayheadTick >= end)
+        {
+            PlayheadTick = 0;
+        }
+        _lastTick = DateTime.UtcNow;
+        _timer.Start();
+    }
+
+    private void OnTimerTick(object? sender, EventArgs e)
+    {
+        var now = DateTime.UtcNow;
+        var ms = (now - _lastTick).TotalMilliseconds;
+        _lastTick = now;
+        PlayheadTick += (long)PianoRollLayout.TicksForMs(ms, Tempo);
+        var end = Notes.Count == 0 ? 0 : Notes.Max(n => n.EndTick);
+        if (PlayheadTick >= end)
+        {
+            PlayheadTick = end;
+            _timer.Stop();
+        }
+        // 播放头跑出视口时自动跟随
+        var px = _layout.TickToX(PlayheadTick);
+        if (px > _layout.ViewWidth - 40)
+        {
+            _layout.ScrollX = Math.Max(0, PlayheadTick * _layout.PixelsPerTick - _layout.ViewWidth * 0.4);
+        }
+        InvalidateVisual();
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
+        if (e.Key == Key.Space)
+        {
+            TogglePlayback();
+            e.Handled = true;
+            return;
+        }
         if (e.Key is Key.Delete or Key.Back)
         {
             DeleteSelection();

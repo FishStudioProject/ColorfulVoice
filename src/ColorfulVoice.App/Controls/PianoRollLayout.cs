@@ -90,6 +90,10 @@ public sealed class PianoRollLayout
         return (null, false);
     }
 
+    /// <summary>一段时间（毫秒）对应的 tick 数：tempo 拍/分、480 tick/拍。</summary>
+    public static double TicksForMs(double ms, double tempo, double ticksPerBeat = 480) =>
+        Math.Max(0, ms) / 1000.0 * (tempo / 60.0) * ticksPerBeat;
+
     /// <summary>以某个屏幕点为中心缩放（滚轮 / 捏合）。</summary>
     public void ZoomAt(double screenX, double factor, double minPpt = 0.02, double maxPpt = 4.0)
     {
