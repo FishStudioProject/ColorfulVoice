@@ -62,6 +62,27 @@ public static class NanoFish
     }
 
     /// <summary>引擎版本号，例如 <c>0.1.0</c>。</summary>
+    /// <summary>设置呼吸音别名（null 关闭）。</summary>
+    public static void SetBreathAlias(string? alias)
+    {
+        var ptr = IntPtr.Zero;
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(alias))
+            {
+                ptr = Marshal.StringToHGlobalAnsi(alias);
+            }
+            NativeMethods.nanofish_set_breath_alias(ptr);
+        }
+        finally
+        {
+            if (ptr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+        }
+    }
+
     public static string Version =>
         Marshal.PtrToStringUTF8(NativeMethods.nanofish_version()) ?? string.Empty;
 

@@ -55,6 +55,58 @@ public partial class BankWindow : SukiWindow
         }
     }
 
+    /// <summary>扫描一个音源库根目录：根目录与一层子目录里含 oto.ini 的都算音源。</summary>
+    private async void OnScanLibraryClick(object? sender, RoutedEventArgs e)
+    {
+        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "选择音源库根目录",
+            AllowMultiple = false,
+        });
+        if (folders.Count == 0)
+        {
+            return;
+        }
+        var root = folders[0].Path.LocalPath;
+        var banks = new List<LibraryEntry>();
+        void Add(string dir)
+        {
+            var oto = System.IO.Path.Combine(dir, "oto.ini");
+            if (System.IO.File.Exists(oto))
+            {
+                banks.Add(new LibraryEntry(System.IO.Path.GetFileName(dir), oto));
+            }
+        }
+        Add(root);
+        try
+        {
+            foreach (var dir in System.IO.Directory.EnumerateDirectories(root))
+            {
+                Add(dir);
+            }
+        }
+        catch (Exception ex)
+        {
+            SummaryText.Text = $"扫描失败：{ex.Message}";
+            return;
+        }
+
+        LibraryList.ItemsSource = banks;
+        LibraryList.IsVisible = banks.Count > 0;
+        SummaryText.Text = banks.Count > 0 ? $"音源库：找到 {banks.Count} 个音源，点击切换" : "该目录下没有找到音源";
+    }
+
+    private void OnLibrarySelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (LibraryList.SelectedItem is LibraryEntry entry)
+        {
+            SetBank(entry.OtoPath);
+            SummaryText.Text = $"{SummaryText.Text}｜已切换到 {entry.Name}";
+        }
+    }
+
+    public sealed record LibraryEntry(string Name, string OtoPath);
+
     private async void OnImportFolderClick(object? sender, RoutedEventArgs e)
     {
         var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions

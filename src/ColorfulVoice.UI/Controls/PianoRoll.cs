@@ -57,6 +57,9 @@ public sealed class PianoRoll : Control
     private long _origStart;
     private long _origLength;
     private double _pinchStartDistance;
+    private Point _pinchMid;
+    private double _pinchStartScrollX;
+    private double _pinchStartScrollY;
     private double _pinchStartPpt;
     private Point _dragOrigin;
     private Point _boxStart;
@@ -369,9 +372,24 @@ public sealed class PianoRoll : Control
     // 交互
     // ------------------------------------------------------------------
 
+    /// <summary>双击音符时触发（用于打开属性面板）。</summary>
+    public event Action<PianoNote>? NoteDoubleClicked;
+
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+
+        if (e.ClickCount == 2)
+        {
+            var doublePos = e.GetPosition(this);
+            var (doubleHit, _) = _layout.HitTest(Notes, doublePos.X, doublePos.Y);
+            if (doubleHit is not null)
+            {
+                NoteDoubleClicked?.Invoke(doubleHit);
+                e.Handled = true;
+                return;
+            }
+        }
         var p = e.GetPosition(this);
         _pointers[e.Pointer.Id] = p;
 
@@ -379,7 +397,10 @@ public sealed class PianoRoll : Control
         {
             _mode = DragMode.Pinch;
             _pinchStartDistance = PinchDistance();
+            _pinchMid = PinchMidpoint();
             _pinchStartPpt = _layout.PixelsPerTick;
+            _pinchStartScrollX = _layout.ScrollX;
+            _pinchStartScrollY = _layout.ScrollY;
             e.Pointer.Capture(this);
             return;
         }
@@ -518,6 +539,10 @@ public sealed class PianoRoll : Control
                     var factor = distance / _pinchStartDistance;
                     _layout.PixelsPerTick = Math.Clamp(_pinchStartPpt * factor, 0.02, 4.0);
                 }
+                // 双指同时平移：跟随两指中点位移
+                var mid = PinchMidpoint();
+                _layout.ScrollX = Math.Max(0, _pinchStartScrollX - (mid.X - _pinchMid.X));
+                _layout.ScrollY = Math.Max(0, _pinchStartScrollY - (mid.Y - _pinchMid.Y));
                 InvalidateVisual();
                 break;
             }
@@ -836,6 +861,16 @@ public sealed class PianoRoll : Control
         }
         Selected = _selection.LastOrDefault();
         InvalidateVisual();
+    }
+
+    private Point PinchMidpoint()
+    {
+        if (_pointers.Count < 2)
+        {
+            return default;
+        }
+        var pts = _pointers.Values.Take(2).ToArray();
+        return new Point((pts[0].X + pts[1].X) / 2, (pts[0].Y + pts[1].Y) / 2);
     }
 
     private double PinchDistance()

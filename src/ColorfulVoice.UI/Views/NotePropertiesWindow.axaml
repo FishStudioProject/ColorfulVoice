@@ -1,0 +1,44 @@
+<suki:SukiWindow xmlns="https://github.com/avaloniaui"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:suki="https://github.com/kikipoulet/SukiUI"
+                 x:Class="ColorfulVoice.Views.NotePropertiesWindow"
+                 Title="音符属性" Width="380" Height="430"
+                 CanResize="False" WindowStartupLocation="CenterOwner"
+                 Background="#FFFFFF">
+  <StackPanel Margin="20" Spacing="12">
+    <TextBlock Text="歌词" Foreground="#6E6E7A" FontSize="12" />
+    <TextBox x:Name="LyricBox" FontSize="16" />
+
+    <Grid ColumnDefinitions="*,12,*">
+      <StackPanel Spacing="4">
+        <TextBlock Text="音高（MIDI）" Foreground="#6E6E7A" FontSize="12" />
+        <NumericUpDown x:Name="PitchBox" Minimum="12" Maximum="120" Increment="1" FormatString="0" />
+      </StackPanel>
+      <StackPanel Grid.Column="2" Spacing="4">
+        <TextBlock Text="时值（tick）" Foreground="#6E6E7A" FontSize="12" />
+        <NumericUpDown x:Name="LengthBox" Minimum="12" Maximum="20000" Increment="24" FormatString="0" />
+      </StackPanel>
+    </Grid>
+
+    <StackPanel Spacing="4">
+      <TextBlock Text="力度 Velocity（0–200，100 为原值）" Foreground="#6E6E7A" FontSize="12" />
+      <NumericUpDown x:Name="VelocityBox" Minimum="0" Maximum="200" Increment="5" FormatString="0" />
+    </StackPanel>
+
+    <Grid ColumnDefinitions="*,12,*">
+      <StackPanel Spacing="4">
+        <TextBlock Text="颤音深度（音分，0=关闭）" Foreground="#6E6E7A" FontSize="12" />
+        <NumericUpDown x:Name="VibratoDepthBox" Minimum="0" Maximum="200" Increment="5" FormatString="0" />
+      </StackPanel>
+      <StackPanel Grid.Column="2" Spacing="4">
+        <TextBlock Text="颤音周期（ms）" Foreground="#6E6E7A" FontSize="12" />
+        <NumericUpDown x:Name="VibratoPeriodBox" Minimum="40" Maximum="600" Increment="10" FormatString="0" />
+      </StackPanel>
+    </Grid>
+
+    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,8,0,0">
+      <Button Content="取消" Click="OnCancel" Padding="16,6" />
+      <Button Content="确定" Click="OnOk" Padding="16,6" Classes="Accent" />
+    </StackPanel>
+  </StackPanel>
+</suki:SukiWindow>

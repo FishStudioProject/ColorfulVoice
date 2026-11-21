@@ -133,6 +133,17 @@ static int SelfTest()
     Check(layout.PixelsPerTick > 0.2, "缩放确实放大了");
 
     // 120 BPM：1 拍 = 0.5s = 480 tick
+    // 双指平移：手指向右下拖 → 内容跟随 → 滚动量减小
+    layout.ScrollX = 100;
+    layout.ScrollY = 100;
+    layout.PanBy(40, 30);
+    Check(Math.Abs(layout.ScrollX - 60) < 0.001 && Math.Abs(layout.ScrollY - 70) < 0.001, "双指平移跟随位移");
+    layout.PanBy(1000, 1000);
+    Check(layout.ScrollX == 0 && layout.ScrollY == 0, "平移夹在 0 以上");
+
+    // 触控热区：右边缘 16px 内都算改时值
+    Check(PianoRollLayout.ResizeHandleWidth >= 16, "改时值热区 ≥16px");
+
     Check(Math.Abs(PianoRollLayout.TicksForMs(500, 120) - 480) < 0.5, "播放头推进：500ms @ 120BPM = 480 tick");
     Check(Math.Abs(PianoRollLayout.TicksForMs(1000, 60) - 480) < 0.5, "播放头推进：1s @ 60BPM = 480 tick");
 

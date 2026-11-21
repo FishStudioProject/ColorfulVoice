@@ -1,0 +1,17 @@
+<suki:SukiWindow xmlns="https://github.com/avaloniaui"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:suki="https://github.com/kikipoulet/SukiUI"
+                 x:Class="ColorfulVoice.Views.LyricsWindow"
+                 Title="批量歌词" Width="420" Height="380"
+                 WindowStartupLocation="CenterOwner" Background="#FFFFFF">
+  <StackPanel Margin="20" Spacing="10">
+    <TextBlock Text="按空格或标点切分，依次填入非休止音符（中文、假名、罗马音均可）"
+               Foreground="#6E6E7A" FontSize="12" TextWrapping="Wrap" />
+    <TextBox x:Name="LyricsBox" AcceptsReturn="True" Height="200" TextWrapping="Wrap"
+             Watermark="ka ki ku ke ko" />
+    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+      <Button Content="取消" Click="OnCancel" Padding="16,6" />
+      <Button Content="填入" Click="OnOk" Padding="16,6" Classes="Accent" />
+    </StackPanel>
+  </StackPanel>
+</suki:SukiWindow>

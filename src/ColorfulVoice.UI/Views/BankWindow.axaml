@@ -16,10 +16,14 @@
         <TextBlock x:Name="PhonemeText" Text="" FontSize="12" Foreground="#1F9E8F" TextWrapping="Wrap" />
       </StackPanel>
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <Button Content="音源库…" Click="OnScanLibraryClick" Padding="12,6" />
         <Button Content="导入音源文件夹…" Click="OnImportFolderClick" Padding="12,6" />
         <Button Content="选择 oto.ini…" Click="OnPickClick" Padding="12,6" />
       </StackPanel>
     </Grid>
+
+    <ListBox x:Name="LibraryList" Grid.Row="1" IsVisible="False" MaxHeight="160"
+             SelectionChanged="OnLibrarySelectionChanged" Background="Transparent" />
 
     <Grid Grid.Row="2" ColumnDefinitions="*,16,*" Margin="0,14,0,0">
       <Border BorderBrush="#E4E6EF" BorderThickness="1" CornerRadius="8" Padding="10">

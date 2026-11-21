@@ -33,6 +33,8 @@
           <Button.Flyout>
             <MenuFlyout>
               <MenuItem Header="音源管理器…" Click="OnBankClick" />
+              <MenuItem Header="批量歌词…" Click="OnLyricsClick" />
+              <MenuItem Header="呼吸音（br）" ToggleType="CheckBox" Click="OnBreathToggle" />
               <MenuItem Header="保存 UST" Click="OnSaveClick" />
             </MenuFlyout>
           </Button.Flyout>

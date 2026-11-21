@@ -12,6 +12,15 @@ public sealed class PianoNote
     public int NoteNum { get; set; }
     public string Lyric { get; set; } = "a";
 
+    /// <summary>UTAU 的 Velocity（0–200，100 为原值）。</summary>
+    public int Velocity { get; set; } = 100;
+
+    /// <summary>颤音深度（音分，0 = 关闭）。</summary>
+    public double VibratoDepth { get; set; }
+
+    /// <summary>颤音周期（毫秒）。</summary>
+    public double VibratoPeriod { get; set; } = 180;
+
     /// <summary>音高曲线（PBS/PBW/PBY/PBM），可为空。</summary>
     public PitchCurve? Curve { get; set; }
 
@@ -24,6 +33,9 @@ public sealed class PianoNote
         LengthTicks = LengthTicks,
         NoteNum = NoteNum,
         Lyric = Lyric,
+        Velocity = Velocity,
+        VibratoDepth = VibratoDepth,
+        VibratoPeriod = VibratoPeriod,
         Curve = Curve?.Clone(),
     };
 }
@@ -59,7 +71,7 @@ public sealed class PianoRollLayout
     public double ViewHeight { get; set; } = 500;
 
     /// <summary>右侧拖拽改时值的感应宽度。</summary>
-    public const double ResizeHandleWidth = 10;
+    public const double ResizeHandleWidth = 16;
 
     public double TickToX(double tick) => KeyboardWidth + tick * PixelsPerTick - ScrollX;
 
@@ -98,6 +110,13 @@ public sealed class PianoRollLayout
     /// <summary>一段时间（毫秒）对应的 tick 数：tempo 拍/分、480 tick/拍。</summary>
     public static double TicksForMs(double ms, double tempo, double ticksPerBeat = 480) =>
         Math.Max(0, ms) / 1000.0 * (tempo / 60.0) * ticksPerBeat;
+
+    /// <summary>平移视口（双指拖动 / 单指拖空白），并夹在合法范围内。</summary>
+    public void PanBy(double dx, double dy)
+    {
+        ScrollX = Math.Max(0, ScrollX - dx);
+        ScrollY = Math.Max(0, ScrollY - dy);
+    }
 
     /// <summary>以某个屏幕点为中心缩放（滚轮 / 捏合）。</summary>
     public void ZoomAt(double screenX, double factor, double minPpt = 0.02, double maxPpt = 4.0)

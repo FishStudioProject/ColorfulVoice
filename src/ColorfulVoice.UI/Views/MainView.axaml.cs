@@ -34,6 +34,7 @@ public partial class MainView : UserControl
 
         BuildDemoNotes();
         Roll.Notes = _notes;
+        Roll.NoteDoubleClicked += OnNoteDoubleClicked;
         AttachedToVisualTree += (_, _) => Roll.FitToNotes();
 
         LoadEngineDemo();
@@ -185,7 +186,9 @@ public partial class MainView : UserControl
                     NoteNum = n.NoteNum,
                     Lyric = n.Lyric,
                     IsRest = n.Lyric == "R",
-                    Extras = PitchCurve.ReplaceLines(_extras.GetValueOrDefault(n.Id, string.Empty), n.Curve),
+                    Extras = WithVelocity(
+                        PitchCurve.ReplaceLines(_extras.GetValueOrDefault(n.Id, string.Empty), n.Curve),
+                        n.Velocity, n.VibratoDepth, n.VibratoPeriod),
                 })
                 .ToList();
 
@@ -273,6 +276,89 @@ public partial class MainView : UserControl
     }
 
     /// <summary>无头截图用：把播放头放到指定 tick。</summary>
+    /// <summary>把 Velocity 写进 UST 附加行（去掉旧的同名行，避免重复）。</summary>
+    private static string WithVelocity(string extras, int velocity, double vibratoDepth, double vibratoPeriod)
+    {
+        var lines = extras
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Where(l => !l.TrimStart().StartsWith("Velocity=", StringComparison.OrdinalIgnoreCase)
+                        && !l.TrimStart().StartsWith("VBR=", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        if (velocity != 100)
+        {
+            lines.Add($"Velocity={velocity}");
+        }
+        if (vibratoDepth > 0)
+        {
+            // VBR=length,period,depth,in,out,shift,drift
+            lines.Add($"VBR={vibratoPeriod:0},{vibratoPeriod:0},{vibratoDepth:0},20,20,0,0");
+        }
+        return string.Join("\n", lines);
+    }
+
+    private async void OnNoteDoubleClicked(PianoNote note)
+    {
+        try
+        {
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                StatusText.Text = "移动端暂不支持属性面板，请用桌面版编辑";
+                return;
+            }
+            var dialog = new Views.NotePropertiesWindow(note);
+            var ok = await dialog.ShowDialog<bool>(owner);
+            if (ok)
+            {
+                Roll.InvalidateVisual();
+                StatusText.Text = $"音符 #{note.Id} 已更新（{note.Lyric} · {note.NoteNum} · {note.LengthTicks} tick · vel {note.Velocity}）";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"打开属性失败：{ex.Message}";
+        }
+    }
+
+    private void OnBreathToggle(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var on = (sender as MenuItem)?.IsChecked == true;
+        NanoFish.Interop.NanoFish.SetBreathAlias(on ? "br" : null);
+        StatusText.Text = on ? "呼吸音已开启（休止处插 br）" : "呼吸音已关闭";
+    }
+
+    private async void OnLyricsClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        try
+        {
+            if (TopLevel.GetTopLevel(this) is not Window owner)
+            {
+                StatusText.Text = "移动端暂不支持批量歌词弹窗";
+                return;
+            }
+            var dialog = new Views.LyricsWindow();
+            if (!await dialog.ShowDialog<bool>(owner) || dialog.Syllables.Length == 0)
+            {
+                return;
+            }
+            var targets = _notes.Where(n => !n.Lyric.Equals("R", StringComparison.OrdinalIgnoreCase)).OrderBy(n => n.StartTick).ToList();
+            var written = 0;
+            foreach (var note in targets)
+            {
+                if (written >= dialog.Syllables.Length)
+                {
+                    break;
+                }
+                note.Lyric = dialog.Syllables[written++];
+            }
+            Roll.InvalidateVisual();
+            StatusText.Text = $"已填入 {written} 个音符的歌词";
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"批量歌词失败：{ex.Message}";
+        }
+    }
+
     public void SeekPreview(long tick) => Roll.Seek(tick);
 
     /// <summary>无头截图用：选中第 N 个音符（展示音高曲线把手）。</summary>
