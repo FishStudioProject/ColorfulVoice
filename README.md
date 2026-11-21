@@ -29,6 +29,8 @@
     └── scripts/               # build.sh / sync-native.sh
 ```
 
+> 交接与启动：见 [docs/HANDOVER.md](docs/HANDOVER.md)；Android 细节见 [docs/android-ondevice.md](docs/android-ondevice.md)。
+
 ## 零拷贝契约
 
 ```
