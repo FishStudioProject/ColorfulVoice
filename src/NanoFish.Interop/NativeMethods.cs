@@ -47,6 +47,22 @@ internal static class NativeMethods
     [DllImport(Lib, EntryPoint = "nanofish_free_ust", CallingConvention = CallingConvention.Cdecl)]
     internal static extern void nanofish_free_ust(ref NfUstDataNative data);
 
+    [DllImport(Lib, EntryPoint = "nanofish_load_oto", CallingConvention = CallingConvention.Cdecl)]
+    internal static extern int nanofish_load_oto(
+        [MarshalAs(UnmanagedType.LPUTF8Str)] string path, out NfOtoBankNative bank);
+
+    [DllImport(Lib, EntryPoint = "nanofish_free_oto", CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void nanofish_free_oto(ref NfOtoBankNative bank);
+
+    [DllImport(Lib, EntryPoint = "nanofish_save_ust", CallingConvention = CallingConvention.Cdecl)]
+    internal static extern unsafe int nanofish_save_ust(
+        [MarshalAs(UnmanagedType.LPUTF8Str)] string path,
+        float tempo,
+        NfNoteNative* notes,
+        nuint count,
+        byte* extras,
+        nuint extrasLen);
+
     [DllImport(Lib, EntryPoint = "nanofish_render_ust", CallingConvention = CallingConvention.Cdecl)]
     internal static extern int nanofish_render_ust(
         [MarshalAs(UnmanagedType.LPUTF8Str)] string ustPath,

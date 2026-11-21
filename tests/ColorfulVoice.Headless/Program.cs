@@ -11,6 +11,21 @@ if (args.Contains("--self-test"))
     return SelfTest();
 }
 
+if (args.Contains("--bank-window"))
+{
+    return BankShot(args);
+}
+
+if (args.Contains("--pitch-test"))
+{
+    return PitchTest();
+}
+
+if (args.Contains("--save-test"))
+{
+    return SaveTest();
+}
+
 if (args.Contains("--audio-test"))
 {
     return AudioTest();
@@ -45,6 +60,11 @@ if (args.Length > 1)
 if (args.Length > 2 && long.TryParse(args[2], out var seekTick))
 {
     window.SeekPreview(seekTick);
+}
+var selectIndex = Array.IndexOf(args, "--select");
+if (selectIndex >= 0 && selectIndex + 1 < args.Length && int.TryParse(args[selectIndex + 1], out var noteIndex))
+{
+    window.SelectPreview(noteIndex);
 }
 
 // 推进布局 + 渲染定时器，确保绘制真的发生
@@ -135,4 +155,74 @@ static int AudioTest()
     }
     Console.WriteLine("音频链路 OK");
     return 0;
+}
+
+static int SaveTest()
+{
+    var src = "/root/workspace/NovaVoice/NanoFish/tests/data/handshake.ust";
+    var dst = "/tmp/ui-roundtrip.ust";
+    var doc = NanoFish.Interop.UstLoader.Load(src);
+    Console.WriteLine($"加载: {doc.Notes.Count} 个音符, tempo {doc.Tempo}");
+    NanoFish.Interop.UstWriter.Save(dst, doc.Tempo, doc.Notes);
+    var back = NanoFish.Interop.UstLoader.Load(dst);
+    Console.WriteLine($"重载: {back.Notes.Count} 个音符");
+
+    var ok = back.Notes.Count == doc.Notes.Count
+             && back.Notes.Any(n => n.Extras.Contains("PBS="))
+             && back.Notes.Any(n => n.Extras.Contains("Envelope="))
+             && back.Notes[0].Lyric == "か";
+    Console.WriteLine(ok ? "保存往返 OK（PBS/Envelope 保留）" : "保存往返失败");
+    return ok ? 0 : 1;
+}
+
+static int BankShot(string[] args)
+{
+    var outPath = args[0];
+    var oto = args[Array.IndexOf(args, "--bank-window") + 1];
+
+    AppBuilder.Configure<App>()
+        .UseSkia()
+        .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
+        .WithInterFont()
+        .SetupWithoutStarting();
+
+    var lyrics = new[] { "- か", "a か", "i か", "x 缺失" };
+    var window = new ColorfulVoice.Views.BankWindow(oto, lyrics) { Width = 860, Height = 580 };
+    window.Show();
+    Dispatcher.UIThread.RunJobs();
+    AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+    Dispatcher.UIThread.RunJobs();
+
+    var frame = window.CaptureRenderedFrame();
+    if (frame is null)
+    {
+        Console.Error.WriteLine("渲染失败");
+        return 1;
+    }
+    frame.Save(outPath);
+    Console.WriteLine($"已保存 {outPath}");
+    return 0;
+}
+
+static int PitchTest()
+{
+    const string extras = "Envelope=0,5,35,0,100,100,0,%\nPBS=-40;0.5\nPBW=60,90\nPBY=0.5,-0.3\nPBM=,r";
+    var curve = NanoFish.Interop.PitchCurve.FromExtras(extras);
+    if (curve is null || curve.Points.Count != 3)
+    {
+        Console.Error.WriteLine("解析失败");
+        return 1;
+    }
+    var ok = Math.Abs(curve.Points[0].X + 40) < 0.001
+             && Math.Abs(curve.Points[2].X - 110) < 0.001
+             && Math.Abs(curve.Points[2].Y + 0.3) < 0.001
+             && curve.Points[1].Shape == 'r';
+
+    var rebuilt = NanoFish.Interop.PitchCurve.ReplaceLines(extras, curve);
+    var again = NanoFish.Interop.PitchCurve.FromExtras(rebuilt);
+    ok &= again is not null && again.Points.Count == 3 && Math.Abs(again.Points[1].X - 20) < 0.001;
+    ok &= rebuilt.Contains("Envelope=");
+
+    Console.WriteLine(ok ? "音高曲线往返 OK" : $"音高曲线往返失败:\n{rebuilt}");
+    return ok ? 0 : 1;
 }

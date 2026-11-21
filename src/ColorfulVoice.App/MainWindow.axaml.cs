@@ -16,6 +16,7 @@ public partial class MainWindow : Window
     private string? _otoPath;
     private string? _voiceDir;
     private readonly List<PianoNote> _notes = new();
+    private readonly Dictionary<int, string> _extras = new();
 
     public MainWindow()
     {
@@ -78,6 +79,21 @@ public partial class MainWindow : Window
         Grid.SetColumnSpan(Toolbar, compact ? 2 : 1);
         Toolbar.HorizontalAlignment = compact ? Avalonia.Layout.HorizontalAlignment.Left : Avalonia.Layout.HorizontalAlignment.Right;
         Toolbar.Margin = compact ? new Avalonia.Thickness(0, 8, 0, 0) : default;
+        if (compact)
+        {
+            Toolbar.Classes.Add("compact");
+        }
+        else
+        {
+            Toolbar.Classes.Remove("compact");
+        }
+
+        // 窄屏只留"主页 / 预览 / ⋯"，其余收进菜单
+        MoreButton.IsVisible = compact;
+        foreach (var button in new[] { BankButton, SaveButton, ExportButton, OpenUstButton })
+        {
+            button.IsVisible = !compact;
+        }
         TitleBlock.Margin = compact ? new Avalonia.Thickness(0, 0, 0, 0) : default;
     }
     private void OnBackClick(object? sender, RoutedEventArgs e)
@@ -111,6 +127,57 @@ public partial class MainWindow : Window
         Home.IsVisible = false;
         Editor.IsVisible = true;
         Roll.FitToNotes();
+    }
+
+    private async void OnBankClick(object? sender, RoutedEventArgs e)
+    {
+        var dialog = new Views.BankWindow(_otoPath, _notes.Select(n => n.Lyric));
+        await dialog.ShowDialog(this);
+        if (dialog.OtoPath is not null && dialog.OtoPath != _otoPath)
+        {
+            _otoPath = dialog.OtoPath;
+            _voiceDir = dialog.VoiceDir;
+            _rendered?.Dispose();
+            _rendered = null;
+            StatusText.Text = $"已切换音源：{_otoPath}（{System.IO.Path.GetFileName(_voiceDir)}）";
+        }
+    }
+
+    private async void OnSaveClick(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "保存 UST",
+                SuggestedFileName = _ustPath is null ? "untitled.ust" : System.IO.Path.GetFileName(_ustPath),
+                DefaultExtension = "ust",
+            });
+            if (file is null)
+            {
+                return;
+            }
+
+            var notes = _notes
+                .OrderBy(n => n.StartTick)
+                .Select(n => new UstNoteData
+                {
+                    StartTick = (uint)n.StartTick,
+                    LengthTicks = (uint)n.LengthTicks,
+                    NoteNum = n.NoteNum,
+                    Lyric = n.Lyric,
+                    IsRest = n.Lyric == "R",
+                    Extras = PitchCurve.ReplaceLines(_extras.GetValueOrDefault(n.Id, string.Empty), n.Curve),
+                })
+                .ToList();
+
+            UstWriter.Save(file.Path.LocalPath, (float)Roll.Tempo, notes);
+            StatusText.Text = $"已保存 {file.Path.LocalPath}（{notes.Count} 个音符，附加字段原样保留）";
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"保存失败：{ex.Message}";
+        }
     }
 
     private async void OnExportClick(object? sender, RoutedEventArgs e)
@@ -222,6 +289,15 @@ public partial class MainWindow : Window
     /// <summary>无头截图用：把播放头放到指定 tick。</summary>
     public void SeekPreview(long tick) => Roll.Seek(tick);
 
+    /// <summary>无头截图用：选中第 N 个音符（展示音高曲线把手）。</summary>
+    public void SelectPreview(int index)
+    {
+        if (index >= 0 && index < _notes.Count)
+        {
+            Roll.SelectNote(_notes[index]);
+        }
+    }
+
     /// <summary>从磁盘加载 UST（解析在 Rust 侧完成，经 FFI 取回扁平音符表）。</summary>
     public void OpenUst(string path)
     {
@@ -229,9 +305,11 @@ public partial class MainWindow : Window
         {
             var doc = UstLoader.Load(path);
             _notes.Clear();
+            _extras.Clear();
             var id = 0;
             foreach (var n in doc.Notes)
             {
+                _extras[id] = n.Extras;
                 _notes.Add(new PianoNote
                 {
                     Id = id++,
@@ -239,6 +317,7 @@ public partial class MainWindow : Window
                     LengthTicks = n.LengthTicks,
                     NoteNum = n.NoteNum,
                     Lyric = n.IsRest ? "R" : n.Lyric,
+                    Curve = n.Curve?.Clone(),
                 });
             }
             Roll.Tempo = Math.Max(20, doc.Tempo);
@@ -255,9 +334,10 @@ public partial class MainWindow : Window
             _rendered = null;
             Roll.FitToNotes();
             SubtitleText.Text = $"{System.IO.Path.GetFileName(path)} · {doc.Notes.Count} 个音符 · Tempo {doc.Tempo:0.##}";
-            StatusText.Text = _otoPath is null
+            StatusText.Text = (_otoPath is null
                 ? $"已加载 {doc.Notes.Count} 个音符；未找到 oto.ini，无法试听"
-                : $"已加载 {doc.Notes.Count} 个音符；音源 {_voiceDir}";
+                : $"已加载 {doc.Notes.Count} 个音符；音源 {_voiceDir}")
+                + " · 双击音符添加音高曲线，拖动圆点调整";
             ShowEditor();
         }
         catch (Exception ex)

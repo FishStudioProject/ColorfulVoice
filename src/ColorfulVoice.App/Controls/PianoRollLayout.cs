@@ -1,4 +1,5 @@
 using System;
+using NanoFish.Interop;
 
 namespace ColorfulVoice.Controls;
 
@@ -11,6 +12,9 @@ public sealed class PianoNote
     public int NoteNum { get; set; }
     public string Lyric { get; set; } = "a";
 
+    /// <summary>音高曲线（PBS/PBW/PBY/PBM），可为空。</summary>
+    public PitchCurve? Curve { get; set; }
+
     public long EndTick => StartTick + LengthTicks;
 
     public PianoNote Clone() => new()
@@ -20,6 +24,7 @@ public sealed class PianoNote
         LengthTicks = LengthTicks,
         NoteNum = NoteNum,
         Lyric = Lyric,
+        Curve = Curve?.Clone(),
     };
 }
 

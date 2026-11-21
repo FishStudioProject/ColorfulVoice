@@ -11,6 +11,8 @@ internal unsafe struct NfNoteNative
     public uint LengthTicks;
     public int NoteNum;
     public uint Flags;
+    public uint ExtrasOff;
+    public uint ExtrasLen;
     public fixed byte Lyric[64];
 }
 
@@ -22,6 +24,9 @@ internal struct NfUstDataNative
     public UIntPtr NoteCount;
     public UIntPtr Capacity;
     public float Tempo;
+    public IntPtr Extras;
+    public UIntPtr ExtrasLen;
+    public UIntPtr ExtrasCapacity;
 }
 
 public sealed class UstNoteData
@@ -31,6 +36,11 @@ public sealed class UstNoteData
     public int NoteNum { get; init; }
     public bool IsRest { get; init; }
     public string Lyric { get; init; } = string.Empty;
+    /// <summary>解析时保留的原始字段（PBS / Envelope / VBR 等），保存时原样写回。</summary>
+    public string Extras { get; init; } = string.Empty;
+
+    /// <summary>从 Extras 解析出的音高曲线（可为 null）。</summary>
+    public PitchCurve? Curve { get; init; }
 }
 
 public sealed class UstDocument
@@ -57,10 +67,17 @@ public static class UstLoader
             unsafe
             {
                 var ptr = (NfNoteNative*)native.Notes;
+                var blob = (byte*)native.Extras;
+                var blobLen = checked((int)native.ExtrasLen);
                 for (var i = 0; i < count; i++)
                 {
                     var n = ptr[i];
                     var lyric = Encoding.UTF8.GetString(n.Lyric, 64).TrimEnd('\0');
+                    var extras = string.Empty;
+                    if (blob != null && n.ExtrasLen > 0 && n.ExtrasOff + n.ExtrasLen <= blobLen)
+                    {
+                        extras = Encoding.UTF8.GetString(blob + (int)n.ExtrasOff, (int)n.ExtrasLen);
+                    }
                     notes.Add(new UstNoteData
                     {
                         StartTick = n.StartTick,
@@ -68,6 +85,8 @@ public static class UstLoader
                         NoteNum = n.NoteNum,
                         IsRest = (n.Flags & 1) != 0,
                         Lyric = lyric,
+                        Extras = extras,
+                        Curve = PitchCurve.FromExtras(extras),
                     });
                 }
             }

@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
+using NanoFish.Interop;
 
 namespace ColorfulVoice.Controls;
 
@@ -35,13 +36,16 @@ public sealed class PianoRoll : Control
     private static readonly Pen BeatPen = new(new SolidColorBrush(Color.Parse("#DCDEE9")), 1);
     private static readonly Pen BarPen = new(new SolidColorBrush(Color.Parse("#C6CAD9")), 1.5);
     private static readonly IBrush RulerText = new SolidColorBrush(Color.Parse("#8A8A96"));
+    private static readonly Pen CurvePen = new(new SolidColorBrush(Color.Parse("#1F9E8F")), 1.6);
+    private static readonly IBrush CurveHandle = new SolidColorBrush(Color.Parse("#1F9E8F"));
+    private static readonly IBrush CurveHandleActive = new SolidColorBrush(Color.Parse("#E0873A"));
     private static readonly Pen PlayheadPen = new(new SolidColorBrush(Color.Parse("#F2B35C")), 1.5);
     private static readonly Pen EdgePen = new(new SolidColorBrush(Color.Parse("#5A5A6A")), 2);
 
     public static readonly StyledProperty<IReadOnlyList<PianoNote>> NotesProperty =
         AvaloniaProperty.Register<PianoRoll, IReadOnlyList<PianoNote>>(nameof(Notes), Array.Empty<PianoNote>());
 
-    private enum DragMode { None, Move, Resize, Create, Pinch, BoxSelect }
+    private enum DragMode { None, Move, Resize, Create, Pinch, BoxSelect, PitchPoint }
 
     private readonly PianoRollLayout _layout = new();
     private readonly Dictionary<int, Point> _pointers = new();
@@ -56,6 +60,8 @@ public sealed class PianoRoll : Control
     private double _pinchStartPpt;
     private Point _dragOrigin;
     private Point _boxStart;
+    private PianoNote? _curveNote;
+    private PitchPoint? _curvePoint;
     private Rect _box;
     private int _nextId = 1000;
     private readonly List<PianoNote> _selection = new();
@@ -140,6 +146,8 @@ public sealed class PianoRoll : Control
         DrawGrid(context, w, h);
         DrawNotes(context, w, h);
         DrawKeyboard(context, h);
+        DrawPitchCurves(context, w, h);
+
         // 小节号 + 播放头
         var barTicks = _layout.SnapTicks * 16;
         var firstBar = Math.Max(0, _layout.XToTick(_layout.KeyboardWidth) / barTicks * barTicks);
@@ -244,6 +252,49 @@ public sealed class PianoRoll : Control
         }
     }
 
+    private double TicksPerMs => Tempo / 60.0 * 480.0 / 1000.0;
+
+    private double CurveX(PianoNote note, double xMs) =>
+        _layout.TickToX(note.StartTick + xMs * TicksPerMs);
+
+    private double CurveY(PianoNote note, double semitones) =>
+        _layout.NoteToY(note.NoteNum) + _layout.RowHeight / 2 - semitones * _layout.RowHeight;
+
+    private void DrawPitchCurves(DrawingContext context, double w, double h)
+    {
+        foreach (var note in Notes)
+        {
+            var curve = note.Curve;
+            if (curve is null || curve.Points.Count < 2)
+            {
+                continue;
+            }
+            var geometry = new StreamGeometry();
+            using (var ctx = geometry.Open())
+            {
+                var first = curve.Points[0];
+                ctx.BeginFigure(new Point(CurveX(note, first.X), CurveY(note, first.Y)), false);
+                for (var i = 1; i < curve.Points.Count; i++)
+                {
+                    var p = curve.Points[i];
+                    ctx.LineTo(new Point(CurveX(note, p.X), CurveY(note, p.Y)));
+                }
+                ctx.EndFigure(false);
+            }
+            context.DrawGeometry(null, CurvePen, geometry);
+
+            if (ReferenceEquals(note, Selected))
+            {
+                foreach (var p in curve.Points)
+                {
+                    var center = new Point(CurveX(note, p.X), CurveY(note, p.Y));
+                    var brush = ReferenceEquals(p, _curvePoint) ? CurveHandleActive : CurveHandle;
+                    context.DrawEllipse(brush, null, center, 4, 4);
+                }
+            }
+        }
+    }
+
     private void DrawKeyboard(DrawingContext context, double h)
     {
         var kw = _layout.KeyboardWidth;
@@ -339,6 +390,27 @@ public sealed class PianoRoll : Control
         }
 
         Focus();
+
+        // 先判曲线点（选中音符才有把手）
+        if (Selected?.Curve is { } selectedCurve)
+        {
+            foreach (var point in selectedCurve.Points)
+            {
+                var center = new Point(CurveX(Selected, point.X), CurveY(Selected, point.Y));
+                if (Math.Abs(center.X - p.X) <= 8 && Math.Abs(center.Y - p.Y) <= 8)
+                {
+                    _curveNote = Selected;
+                    _curvePoint = point;
+                    _mode = DragMode.PitchPoint;
+                    PushUndo();
+                    e.Pointer.Capture(this);
+                    InvalidateVisual();
+                    e.Handled = true;
+                    return;
+                }
+            }
+        }
+
         var (hit, resize) = _layout.HitTest(Notes, p.X, p.Y);
         var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
         var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
@@ -350,6 +422,22 @@ public sealed class PianoRoll : Control
             _mode = DragMode.BoxSelect;
             _selection.Clear();
             e.Pointer.Capture(this);
+            InvalidateVisual();
+            e.Handled = true;
+            return;
+        }
+
+        if (hit is not null && e.ClickCount == 2)
+        {
+            if (hit.Curve is null || hit.Curve.Points.Count < 2)
+            {
+                PushUndo();
+                var lengthMs = hit.LengthTicks / TicksPerMs;
+                hit.Curve = new PitchCurve();
+                hit.Curve.Points.Add(new PitchPoint { X = 0, Y = 0 });
+                hit.Curve.Points.Add(new PitchPoint { X = lengthMs, Y = 0 });
+            }
+            Selected = hit;
             InvalidateVisual();
             e.Handled = true;
             return;
@@ -433,6 +521,14 @@ public sealed class PianoRoll : Control
                 InvalidateVisual();
                 break;
             }
+            case DragMode.PitchPoint when _curveNote is not null && _curvePoint is not null:
+            {
+                var centerY = _layout.NoteToY(_curveNote.NoteNum) + _layout.RowHeight / 2;
+                var semitones = (centerY - p.Y) / _layout.RowHeight;
+                _curvePoint.Y = Math.Clamp(Math.Round(semitones * 2) / 2, -24, 24);
+                InvalidateVisual();
+                break;
+            }
             case DragMode.BoxSelect:
             {
                 var x = Math.Min(_boxStart.X, p.X);
@@ -512,6 +608,8 @@ public sealed class PianoRoll : Control
         _dragNote = null;
         _created = null;
         _dragOriginals.Clear();
+        _curveNote = null;
+        _curvePoint = null;
         InvalidateVisual();
         e.Handled = true;
     }
@@ -535,6 +633,15 @@ public sealed class PianoRoll : Control
         }
         InvalidateVisual();
         e.Handled = true;
+    }
+
+    /// <summary>选中指定音符（调试 / 截图用）。</summary>
+    public void SelectNote(PianoNote note)
+    {
+        _selection.Clear();
+        _selection.Add(note);
+        Selected = note;
+        InvalidateVisual();
     }
 
     /// <summary>把播放头移到指定 tick（用于调试与截图）。</summary>
