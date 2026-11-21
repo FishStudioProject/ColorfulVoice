@@ -1,12 +1,13 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
 using ColorfulVoice.Controls;
 using NanoFish.Interop;
 
-namespace ColorfulVoice;
+namespace ColorfulVoice.Views;
 
-public partial class MainWindow : Window
+public partial class MainView : UserControl
 {
     private AudioBuffer? _buffer;
     private AudioBuffer? _rendered;
@@ -18,7 +19,11 @@ public partial class MainWindow : Window
     private readonly List<PianoNote> _notes = new();
     private readonly Dictionary<int, string> _extras = new();
 
-    public MainWindow()
+    private IStorageProvider StorageProvider =>
+        TopLevel.GetTopLevel(this)?.StorageProvider
+        ?? throw new InvalidOperationException("没有可用的 StorageProvider");
+
+    public MainView()
     {
         InitializeComponent();
 
@@ -28,7 +33,7 @@ public partial class MainWindow : Window
 
         BuildDemoNotes();
         Roll.Notes = _notes;
-        Opened += (_, _) => Roll.FitToNotes();
+        AttachedToVisualTree += (_, _) => Roll.FitToNotes();
 
         LoadEngineDemo();
 
@@ -36,7 +41,7 @@ public partial class MainWindow : Window
 
         _playTimer.Tick += OnPlayTimer;
 
-        Closed += (_, _) =>
+        DetachedFromVisualTree += (_, _) =>
         {
             _buffer?.Dispose();
             _buffer = null;
@@ -132,7 +137,15 @@ public partial class MainWindow : Window
     private async void OnBankClick(object? sender, RoutedEventArgs e)
     {
         var dialog = new Views.BankWindow(_otoPath, _notes.Select(n => n.Lyric));
-        await dialog.ShowDialog(this);
+        if (TopLevel.GetTopLevel(this) is Window owner)
+        {
+            await dialog.ShowDialog(owner);
+        }
+        else
+        {
+            StatusText.Text = "移动端暂不支持弹窗式音源管理器";
+            return;
+        }
         if (dialog.OtoPath is not null && dialog.OtoPath != _otoPath)
         {
             _otoPath = dialog.OtoPath;

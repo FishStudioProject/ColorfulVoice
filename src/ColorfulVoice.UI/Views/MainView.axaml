@@ -1,20 +1,17 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:ColorfulVoice.Controls"
-        xmlns:views="using:ColorfulVoice.Views"
-        x:Class="ColorfulVoice.MainWindow"
-        Title="ColorfulVoice — 钢琴卷帘"
-        Width="1080" Height="640"
-        MinWidth="360" MinHeight="480"
-        Background="#FFFFFF">
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ColorfulVoice.Controls"
+             xmlns:views="using:ColorfulVoice.Views"
+             x:Class="ColorfulVoice.Views.MainView"
+             Background="#FFFFFF">
 
-  <Window.Styles>
+  <UserControl.Styles>
     <Style Selector="WrapPanel.compact Button">
       <Setter Property="Padding" Value="8,5" />
       <Setter Property="FontSize" Value="11" />
       <Setter Property="MinHeight" Value="28" />
     </Style>
-  </Window.Styles>
+  </UserControl.Styles>
 
   <Grid>
     <views:HomeView x:Name="Home" />
@@ -69,4 +66,5 @@
                Text="正在调用 NanoFish…" />
     </Grid>
   </Grid>
-</Window>
+
+</UserControl>

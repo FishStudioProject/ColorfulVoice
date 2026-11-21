@@ -6,24 +6,18 @@
     <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <AssemblyName>ColorfulVoice</AssemblyName>
     <RootNamespace>ColorfulVoice</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.1.0" />
     <PackageReference Include="Avalonia.Desktop" Version="11.1.0" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.1.0" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.1.0" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="11.1.0" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../NanoFish.Interop/NanoFish.Interop.csproj" />
+    <ProjectReference Include="../ColorfulVoice.UI/ColorfulVoice.UI.csproj" />
   </ItemGroup>
 
 </Project>
