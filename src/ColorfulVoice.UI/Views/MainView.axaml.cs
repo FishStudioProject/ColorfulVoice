@@ -35,6 +35,7 @@ public partial class MainView : UserControl
         BuildDemoNotes();
         Roll.Notes = _notes;
         Roll.NoteDoubleClicked += OnNoteDoubleClicked;
+        UpdateHeaderInfo();
         AttachedToVisualTree += (_, _) => Roll.FitToNotes();
 
         LoadEngineDemo();
@@ -74,7 +75,6 @@ public partial class MainView : UserControl
     private void UpdateResponsiveChrome()
     {
         var compact = Bounds.Width > 0 && Bounds.Width < 780;
-        BadgeText.IsVisible = Bounds.Width >= 820;
         if (compact == _compactChrome)
         {
             return;
@@ -110,7 +110,7 @@ public partial class MainView : UserControl
     {
         _notes.Clear();
         Roll.Notes = _notes;
-        SubtitleText.Text = "未命名作品 · 0 个音符";
+        UpdateHeaderInfo();
         StatusText.Text = "在卷帘空白处拖拽即可画音符";
         ShowEditor();
     }
@@ -138,6 +138,7 @@ public partial class MainView : UserControl
         Home.IsVisible = false;
         Editor.IsVisible = true;
         Roll.FitToNotes();
+        UpdateHeaderInfo();
     }
 
     private async void OnBankClick(object? sender, RoutedEventArgs e)
@@ -158,7 +159,8 @@ public partial class MainView : UserControl
             _voiceDir = dialog.VoiceDir;
             _rendered?.Dispose();
             _rendered = null;
-            StatusText.Text = $"已切换音源：{_otoPath}（{System.IO.Path.GetFileName(_voiceDir)}）";
+            UpdateHeaderInfo();
+            StatusText.Text = $"已切换音源：{System.IO.Path.GetFileName(_voiceDir)}";
         }
     }
 
@@ -193,7 +195,8 @@ public partial class MainView : UserControl
                 .ToList();
 
             UstWriter.Save(file.Path.LocalPath, (float)Roll.Tempo, notes);
-            StatusText.Text = $"已保存 {file.Path.LocalPath}（{notes.Count} 个音符，附加字段原样保留）";
+            UpdateHeaderInfo();
+            StatusText.Text = $"已保存 {System.IO.Path.GetFileName(file.Path.LocalPath)} · {notes.Count} 个音符";
         }
         catch (Exception ex)
         {
@@ -276,6 +279,34 @@ public partial class MainView : UserControl
     }
 
     /// <summary>无头截图用：把播放头放到指定 tick。</summary>
+    /// <summary>刷新顶栏的音源名与工程信息。</summary>
+    private void UpdateHeaderInfo()
+    {
+        var bank = "未选择音源";
+        if (!string.IsNullOrEmpty(_voiceDir))
+        {
+            bank = System.IO.Path.GetFileName(_voiceDir.TrimEnd('/', '\\'));
+            try
+            {
+                using var vb = NanoFish.Interop.Voicebank.Open(_voiceDir!);
+                if (!string.IsNullOrWhiteSpace(vb.Name) && vb.Name != "未命名音源")
+                {
+                    bank = vb.Name;
+                }
+            }
+            catch
+            {
+                // 音源信息只是展示，失败就退回目录名
+            }
+        }
+        else if (!string.IsNullOrEmpty(_otoPath))
+        {
+            bank = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(_otoPath) ?? _otoPath);
+        }
+        BankChipText.Text = bank;
+        InfoText.Text = $"{_notes.Count} 个音符 · Tempo {Roll.Tempo:0}";
+    }
+
     /// <summary>把 Velocity 写进 UST 附加行（去掉旧的同名行，避免重复）。</summary>
     private static string WithVelocity(string extras, int velocity, double vibratoDepth, double vibratoPeriod)
     {
@@ -405,11 +436,10 @@ public partial class MainView : UserControl
             _rendered?.Dispose();
             _rendered = null;
             Roll.FitToNotes();
-            SubtitleText.Text = $"{System.IO.Path.GetFileName(path)} · {doc.Notes.Count} 个音符 · Tempo {doc.Tempo:0.##}";
-            StatusText.Text = (_otoPath is null
-                ? $"已加载 {doc.Notes.Count} 个音符；未找到 oto.ini，无法试听"
-                : $"已加载 {doc.Notes.Count} 个音符；音源 {_voiceDir}")
-                + " · 双击音符添加音高曲线，拖动圆点调整";
+            UpdateHeaderInfo();
+            StatusText.Text = _otoPath is null
+                ? $"已加载 {doc.Notes.Count} 个音符 · 未找到 oto.ini，无法试听"
+                : $"已加载 {doc.Notes.Count} 个音符 · 双击空白添加音符";
             RecentProjects.Add(path);
             ShowEditor();
         }
@@ -428,7 +458,7 @@ public partial class MainView : UserControl
             Waveform.Buffer = _buffer;
             Waveform.VisibleSamples = 960;
 
-            SubtitleText.Text = $"NanoFish {NanoFish.Interop.NanoFish.Version} · 8 个音符的卷帘 Demo";
+            UpdateHeaderInfo();
             StatusText.Text =
                 "拖动空白处画音符 · 拖音符移动 · 拖右边缘改时值 · 双指/滚轮缩放 · " +
                 $"波形 {_buffer.Length:N0} 帧 @ {_buffer.SampleRate} Hz（零拷贝映射，RMS {_buffer.Rms():F4}）";

@@ -168,6 +168,13 @@ public sealed class PianoRoll : Control
         {
             context.DrawRectangle(SelectionFill, SelectionPen, _box);
         }
+
+        // 空工程提示
+        if (Notes.Count == 0)
+        {
+            var hint = GetText("双击空白处添加音符，双击音符编辑属性", 13, new SolidColorBrush(Color.Parse("#9AA0AE")));
+            context.DrawText(hint, new Point((w - hint.Width) / 2, (h - hint.Height) / 2));
+        }
     }
 
     private void DrawRows(DrawingContext context, double w, double h)

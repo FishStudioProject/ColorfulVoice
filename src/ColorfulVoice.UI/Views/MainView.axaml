@@ -7,6 +7,23 @@
              FontFamily="{StaticResource DefaultFontFamily}">
 
   <UserControl.Styles>
+    <Style Selector="Button.tool">
+      <Setter Property="Width" Value="38" />
+      <Setter Property="Height" Value="38" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="19" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.tool:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#EEF0F8" />
+    </Style>
+    <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Padding" Value="12,8" />
+      <Setter Property="MinHeight" Value="34" />
+    </Style>
     <Style Selector="WrapPanel.compact Button">
       <Setter Property="Padding" Value="8,5" />
       <Setter Property="FontSize" Value="11" />
@@ -18,18 +35,31 @@
     <views:HomeView x:Name="Home" />
 
     <Grid x:Name="Editor" RowDefinitions="Auto,*,Auto" Margin="16" IsVisible="False">
-    <Grid x:Name="HeaderGrid" Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto" Margin="0,0,0,10">
-      <StackPanel x:Name="TitleBlock" Spacing="2">
-        <TextBlock Text="ColorfulVoice" FontSize="22" FontWeight="SemiBold" Foreground="#15151C" />
-        <TextBlock x:Name="SubtitleText"
-                   Text="NanoFish 引擎握手验证"
-                   FontSize="12" Foreground="#6E6E7A" />
+    <Grid x:Name="HeaderGrid" Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+      <StackPanel x:Name="TitleBlock" Spacing="6" VerticalAlignment="Center">
+        <TextBlock Text="ColorfulVoice" FontSize="20" FontWeight="SemiBold" Foreground="#15151C" />
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Border Background="#EEF0F8" CornerRadius="10" Padding="8,3">
+            <TextBlock x:Name="BankChipText" Text="未选择音源" FontSize="11" Foreground="#4A5578" />
+          </Border>
+          <TextBlock x:Name="InfoText" Text="0 个音符 · Tempo 120"
+                     FontSize="11" Foreground="#8A8F9E" VerticalAlignment="Center" />
+        </StackPanel>
       </StackPanel>
-      <WrapPanel x:Name="Toolbar" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-        <Button x:Name="BackButton" Content="‹ 主页" Click="OnBackClick" Padding="12,6" />
-        <Button x:Name="PlayButton" Content="▶ 预览" Click="OnPlayClick" Padding="12,6" />
-        <Button x:Name="SaveButton" Content="保存 UST" Click="OnSaveClick" Padding="12,6" />
-        <Button x:Name="MoreButton" Content="⋯" Padding="12,6">
+
+      <StackPanel x:Name="Toolbar" Grid.Column="1" Orientation="Horizontal" Spacing="2"
+                  VerticalAlignment="Center" HorizontalAlignment="Right">
+        <Button x:Name="BackButton" Classes="tool" ToolTip.Tip="返回首页" Click="OnBackClick">
+          <PathIcon Width="18" Height="18" Data="{DynamicResource PhHouse}" />
+        </Button>
+        <Button x:Name="PlayButton" Classes="tool" ToolTip.Tip="预览播放" Click="OnPlayClick">
+          <PathIcon Width="18" Height="18" Data="{DynamicResource PhPlay}" />
+        </Button>
+        <Button x:Name="SaveButton" Classes="tool" ToolTip.Tip="保存 UST" Click="OnSaveClick">
+          <PathIcon Width="18" Height="18" Data="{DynamicResource PhFloppydisk}" />
+        </Button>
+        <Button x:Name="MoreButton" Classes="tool" ToolTip.Tip="更多">
+          <PathIcon Width="18" Height="18" Data="{DynamicResource PhDotsthree}" />
           <Button.Flyout>
             <MenuFlyout>
               <MenuItem Header="音源管理器…" Click="OnBankClick" />
@@ -39,10 +69,7 @@
             </MenuFlyout>
           </Button.Flyout>
         </Button>
-        <TextBlock x:Name="BadgeText" VerticalAlignment="Center"
-                   FontSize="12" Foreground="#5B6FC4"
-                   Text="Skia 自绘 · 零拷贝 PCM" />
-      </WrapPanel>
+      </StackPanel>
     </Grid>
 
     <TabControl Grid.Row="1" Padding="0">
@@ -59,8 +86,9 @@
     </TabControl>
 
     <TextBlock x:Name="StatusText" Grid.Row="2"
-               Margin="0,10,0,0"
-               FontSize="12" Foreground="#6E6E7A"
+               Margin="2,10,0,0"
+               FontSize="12" Foreground="#8A8F9E"
+               TextTrimming="CharacterEllipsis"
                Text="正在调用 NanoFish…" />
     </Grid>
   </Grid>
