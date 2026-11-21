@@ -1,12 +1,14 @@
-<Window xmlns="https://github.com/avaloniaui"
+<suki:SukiWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="using:ColorfulVoice.Views"
+        xmlns:suki="https://github.com/kikipoulet/SukiUI"
         x:Class="ColorfulVoice.MainWindow"
         Title="ColorfulVoice"
         Width="1080" Height="640"
         MinWidth="360" MinHeight="480"
-        Background="#FFFFFF">
+        Background="#FFFFFF"
+        IsTitleBarVisible="True">
 
   <views:MainView x:Name="Root" />
 
-</Window>
+</suki:SukiWindow>

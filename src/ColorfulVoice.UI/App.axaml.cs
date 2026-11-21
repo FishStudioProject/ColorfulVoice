@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using ColorfulVoice.Views;
 using Avalonia.Markup.Xaml;
+using SukiUI.Controls;
 
 namespace ColorfulVoice;
 

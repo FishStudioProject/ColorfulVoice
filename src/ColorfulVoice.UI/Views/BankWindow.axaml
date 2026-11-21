@@ -1,10 +1,12 @@
-<Window xmlns="https://github.com/avaloniaui"
+<suki:SukiWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ColorfulVoice.Views.BankWindow"
+        xmlns:suki="https://github.com/kikipoulet/SukiUI"
         x:CompileBindings="False"
         Title="音源管理器"
         Width="860" Height="580"
-        Background="#FFFFFF">
+        Background="#FFFFFF"
+        FontFamily="{StaticResource DefaultFontFamily}">
 
   <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="20">
     <Grid ColumnDefinitions="*,Auto">
@@ -54,4 +56,4 @@
       <Button Content="完成" Click="OnCloseClick" Padding="16,6" />
     </StackPanel>
   </Grid>
-</Window>
+</suki:SukiWindow>

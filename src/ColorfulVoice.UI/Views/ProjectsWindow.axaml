@@ -1,10 +1,12 @@
-<Window xmlns="https://github.com/avaloniaui"
+<suki:SukiWindow xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:suki="https://github.com/kikipoulet/SukiUI"
         x:Class="ColorfulVoice.Views.ProjectsWindow"
         x:CompileBindings="False"
         Title="继续项目"
         Width="760" Height="520"
-        Background="#FFFFFF">
+        Background="#FFFFFF"
+        FontFamily="{StaticResource DefaultFontFamily}">
 
   <Grid RowDefinitions="Auto,*,Auto" Margin="20">
     <StackPanel Spacing="4">
@@ -39,4 +41,4 @@
     <TextBlock x:Name="HintText" Grid.Row="2" Margin="0,10,0,0" FontSize="12" Foreground="#6E6E7A"
                Text="双击工程直接打开；⋯ 里有导出 WAV。" />
   </Grid>
-</Window>
+</suki:SukiWindow>

@@ -11,6 +11,11 @@ if (args.Contains("--self-test"))
     return SelfTest();
 }
 
+if (args.Contains("--font-test"))
+{
+    return FontTest();
+}
+
 if (args.Contains("--bank-test"))
 {
     return BankTest(args);
@@ -245,4 +250,30 @@ static int BankTest(string[] args)
         prev = lyric;
     }
     return 0;
+}
+
+static int FontTest()
+{
+    AppBuilder.Configure<App>()
+        .UseSkia()
+        .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
+        .WithInterFont()
+        .SetupWithoutStarting();
+
+    var gsf = new Avalonia.Media.FontFamily("avares://ColorfulVoice.UI/Assets/Fonts#Google Sans Flex");
+    var ok = Avalonia.Media.FontManager.Current.TryGetGlyphTypeface(new Avalonia.Media.Typeface(gsf), out var glyph);
+    Console.WriteLine($"embedded: {(ok ? glyph.FamilyName : "NOT FOUND")}");
+
+    // 比较默认字体与 GSF 的排版宽度，判断是否真的生效
+    double Measure(Avalonia.Media.FontFamily? family)
+    {
+        var tf = new Avalonia.Media.Typeface(family);
+        var ft = new Avalonia.Media.FormattedText("ColorfulVoice 0123456789", System.Globalization.CultureInfo.InvariantCulture,
+            Avalonia.Media.FlowDirection.LeftToRight, tf, 22, Avalonia.Media.Brushes.Black);
+        return ft.Width;
+    }
+    var d = Measure(null);
+    var g = Measure(gsf);
+    Console.WriteLine($"default width={d:F2}  gsf width={g:F2}  same={Math.Abs(d-g)<0.5}");
+    return ok ? 0 : 1;
 }

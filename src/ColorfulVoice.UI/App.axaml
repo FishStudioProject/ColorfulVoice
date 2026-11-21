@@ -1,10 +1,22 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:suki="https://github.com/kikipoulet/SukiUI"
              x:Class="ColorfulVoice.App"
              RequestedThemeVariant="Light">
 
+  <Application.Resources>
+    <ResourceDictionary>
+      <!-- SukiUI 官方字体入口 -->
+      <FontFamily x:Key="DefaultFontFamily">avares://ColorfulVoice.UI/Assets/Fonts#Google Sans Flex</FontFamily>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://ColorfulVoice.UI/PhosphorIcons.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
   <Application.Styles>
     <FluentTheme />
+    <suki:SukiTheme ThemeColor="Blue" />
   </Application.Styles>
 
 </Application>

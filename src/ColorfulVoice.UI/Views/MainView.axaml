@@ -3,7 +3,8 @@
              xmlns:controls="using:ColorfulVoice.Controls"
              xmlns:views="using:ColorfulVoice.Views"
              x:Class="ColorfulVoice.Views.MainView"
-             Background="#FFFFFF">
+             Background="#FFFFFF"
+             FontFamily="{StaticResource DefaultFontFamily}">
 
   <UserControl.Styles>
     <Style Selector="WrapPanel.compact Button">

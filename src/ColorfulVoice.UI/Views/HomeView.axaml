@@ -1,13 +1,15 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:ColorfulVoice.Controls"
              x:Class="ColorfulVoice.Views.HomeView"
-             Background="#FFFFFF">
+             Background="#FFFFFF"
+             FontFamily="{StaticResource DefaultFontFamily}">
 
   <UserControl.Styles>
     <Style Selector="Button.home">
       <Setter Property="Height" Value="76" />
-      <Setter Property="CornerRadius" Value="14" />
       <Setter Property="Background" Value="#7C8FD8" />
+      <Setter Property="BorderThickness" Value="0" />
       <Setter Property="Foreground" Value="#101018" />
       <Setter Property="FontSize" Value="22" />
       <Setter Property="FontWeight" Value="SemiBold" />
@@ -16,8 +18,11 @@
       <Setter Property="VerticalContentAlignment" Value="Center" />
       <Setter Property="Padding" Value="26,0" />
     </Style>
-    <Style Selector="Button.home:pointerover /template/ ContentPresenter">
+    <Style Selector="Button.home:pointerover">
       <Setter Property="Background" Value="#93A5E8" />
+    </Style>
+    <Style Selector="Button.home:pressed">
+      <Setter Property="Background" Value="#6A7DC6" />
     </Style>
     <Style Selector="TextBlock.title">
       <Setter Property="Foreground" Value="#15151C" />
@@ -29,26 +34,26 @@
     <!-- 宽屏：左标题、右按钮 -->
     <Grid x:Name="WideRoot" ColumnDefinitions="*,Auto" RowDefinitions="*,Auto" Margin="56,44,56,28">
       <StackPanel VerticalAlignment="Center" Spacing="6">
-        <TextBlock x:Name="WideTitle" Classes="title" Text="ColorfulVoice" FontSize="62" />
+        <TextBlock x:Name="WideTitle" Classes="title" Text="ColorfulVoice" FontSize="62" FontFamily="{StaticResource DefaultFontFamily}" />
         <TextBlock Text="0.1.0 Preview" FontSize="20" Foreground="#6E6E7A" Margin="6,0,0,0" />
       </StackPanel>
 
       <StackPanel Grid.Column="1" Width="380" Spacing="16" VerticalAlignment="Center">
-        <Button Classes="home" Click="OnNewClick">
+        <Button Classes="home Rounded" Click="OnNewClick">
           <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-            <PathIcon Width="24" Height="24" Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+            <PathIcon Width="24" Height="24" Data="{DynamicResource PhPlus}" />
             <TextBlock Text="创建新作品" VerticalAlignment="Center" />
           </StackPanel>
         </Button>
-        <Button Classes="home" Click="OnContinueClick">
+        <Button Classes="home Rounded" Click="OnContinueClick">
           <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-            <PathIcon Width="24" Height="24" Data="M8,5.14V19.14L19,12.14L8,5.14Z" />
+            <PathIcon Width="24" Height="24" Data="{DynamicResource PhPlay}" />
             <TextBlock Text="继续项目" VerticalAlignment="Center" />
           </StackPanel>
         </Button>
-        <Button Classes="home" Click="OnImportClick">
+        <Button Classes="home Rounded" Click="OnImportClick">
           <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-            <PathIcon Width="24" Height="24" Data="M19,9H15V3H9V9H5L12,16L19,9M5,18V20H19V18H5Z" />
+            <PathIcon Width="24" Height="24" Data="{DynamicResource PhDownloadsimple}" />
             <TextBlock Text="导入项目" VerticalAlignment="Center" />
           </StackPanel>
         </Button>
@@ -57,27 +62,21 @@
       <Border Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Center"
               Background="#F2F3F7" BorderBrush="#E3E5EE" BorderThickness="1"
               CornerRadius="28" Padding="26,12" Margin="0,24,0,0">
-        <StackPanel Orientation="Horizontal" Spacing="4">
-          <Button Padding="16,8" FontSize="13" CornerRadius="18"
-                  Background="#FFFFFF" Foreground="#15151C">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <PathIcon Width="15" Height="15"
-                        Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
-              <TextBlock Text="首页" VerticalAlignment="Center" />
-            </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="2">
+          <Button ToolTip.Tip="首页" Width="44" Height="44" CornerRadius="22" Padding="0"
+                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                  Background="Transparent">
+            <PathIcon Width="20" Height="20" Data="{DynamicResource PhHouse}" />
           </Button>
-          <Button Padding="16,8" FontSize="13" CornerRadius="18"
-                  Background="#FFFFFF" Foreground="#15151C">
+          <Button ToolTip.Tip="更多" Width="44" Height="44" CornerRadius="22" Padding="0"
+                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                  Background="Transparent">
             <Button.Flyout>
               <MenuFlyout>
                 <MenuItem Header="音源管理…" Click="OnVoicebankClick" />
               </MenuFlyout>
             </Button.Flyout>
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <PathIcon Width="15" Height="15"
-                        Data="M6,8C4.9,8 4,8.9 4,10C4,11.1 4.9,12 6,12C7.1,12 8,11.1 8,10C8,8.9 7.1,8 6,8M12,8C10.9,8 10,8.9 10,10C10,11.1 10.9,12 12,12C13.1,12 14,11.1 14,10C14,8.9 13.1,8 12,8M18,8C16.9,8 16,8.9 16,10C16,11.1 16.9,12 18,12C19.1,12 20,11.1 20,10C20,8.9 19.1,8 18,8Z" />
-              <TextBlock Text="更多" VerticalAlignment="Center" />
-            </StackPanel>
+            <PathIcon Width="20" Height="20" Data="{DynamicResource PhDotsthree}" />
           </Button>
         </StackPanel>
       </Border>
@@ -91,21 +90,21 @@
       </StackPanel>
 
       <StackPanel Grid.Row="1" Spacing="16" Margin="0,40,0,0">
-        <Button Classes="home" Click="OnNewClick">
+        <Button Classes="home Rounded" Click="OnNewClick">
           <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-            <PathIcon Width="24" Height="24" Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+            <PathIcon Width="24" Height="24" Data="{DynamicResource PhPlus}" />
             <TextBlock Text="创建新作品" VerticalAlignment="Center" />
           </StackPanel>
         </Button>
-        <Button Classes="home" Click="OnContinueClick">
+        <Button Classes="home Rounded" Click="OnContinueClick">
           <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-            <PathIcon Width="24" Height="24" Data="M8,5.14V19.14L19,12.14L8,5.14Z" />
+            <PathIcon Width="24" Height="24" Data="{DynamicResource PhPlay}" />
             <TextBlock Text="继续项目" VerticalAlignment="Center" />
           </StackPanel>
         </Button>
-        <Button Classes="home" Click="OnImportClick">
+        <Button Classes="home Rounded" Click="OnImportClick">
           <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-            <PathIcon Width="24" Height="24" Data="M19,9H15V3H9V9H5L12,16L19,9M5,18V20H19V18H5Z" />
+            <PathIcon Width="24" Height="24" Data="{DynamicResource PhDownloadsimple}" />
             <TextBlock Text="导入项目" VerticalAlignment="Center" />
           </StackPanel>
         </Button>
@@ -114,27 +113,21 @@
       <Border Grid.Row="3" HorizontalAlignment="Center"
               Background="#F2F3F7" BorderBrush="#E3E5EE" BorderThickness="1"
               CornerRadius="28" Padding="26,12" Margin="0,24,0,0">
-        <StackPanel Orientation="Horizontal" Spacing="4">
-          <Button Padding="16,8" FontSize="13" CornerRadius="18"
-                  Background="#FFFFFF" Foreground="#15151C">
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <PathIcon Width="15" Height="15"
-                        Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
-              <TextBlock Text="首页" VerticalAlignment="Center" />
-            </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="2">
+          <Button ToolTip.Tip="首页" Width="44" Height="44" CornerRadius="22" Padding="0"
+                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                  Background="Transparent">
+            <PathIcon Width="20" Height="20" Data="{DynamicResource PhHouse}" />
           </Button>
-          <Button Padding="16,8" FontSize="13" CornerRadius="18"
-                  Background="#FFFFFF" Foreground="#15151C">
+          <Button ToolTip.Tip="更多" Width="44" Height="44" CornerRadius="22" Padding="0"
+                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                  Background="Transparent">
             <Button.Flyout>
               <MenuFlyout>
                 <MenuItem Header="音源管理…" Click="OnVoicebankClick" />
               </MenuFlyout>
             </Button.Flyout>
-            <StackPanel Orientation="Horizontal" Spacing="6">
-              <PathIcon Width="15" Height="15"
-                        Data="M6,8C4.9,8 4,8.9 4,10C4,11.1 4.9,12 6,12C7.1,12 8,11.1 8,10C8,8.9 7.1,8 6,8M12,8C10.9,8 10,8.9 10,10C10,11.1 10.9,12 12,12C13.1,12 14,11.1 14,10C14,8.9 13.1,8 12,8M18,8C16.9,8 16,8.9 16,10C16,11.1 16.9,12 18,12C19.1,12 20,11.1 20,10C20,8.9 19.1,8 18,8Z" />
-              <TextBlock Text="更多" VerticalAlignment="Center" />
-            </StackPanel>
+            <PathIcon Width="20" Height="20" Data="{DynamicResource PhDotsthree}" />
           </Button>
         </StackPanel>
       </Border>

@@ -1,10 +1,11 @@
 using Avalonia.Controls;
+using SukiUI.Controls;
 using ColorfulVoice.Views;
 
 namespace ColorfulVoice;
 
 /// <summary>桌面壳：真正的界面在 MainView，Android 单视图宿主直接复用它。</summary>
-public partial class MainWindow : Window
+public partial class MainWindow : SukiWindow
 {
     public MainWindow() => InitializeComponent();
 

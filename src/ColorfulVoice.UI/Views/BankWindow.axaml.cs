@@ -1,11 +1,12 @@
 using Avalonia.Controls;
+using SukiUI.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using NanoFish.Interop;
 
 namespace ColorfulVoice.Views;
 
-public partial class BankWindow : Window
+public partial class BankWindow : SukiWindow
 {
     private readonly List<string> _projectLyrics;
     private List<OtoEntryData> _entries = new();

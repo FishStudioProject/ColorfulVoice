@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using SukiUI.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
@@ -6,7 +7,7 @@ using NanoFish.Interop;
 
 namespace ColorfulVoice.Views;
 
-public partial class ProjectsWindow : Window
+public partial class ProjectsWindow : SukiWindow
 {
     public event Action<string>? OpenRequested;
 
