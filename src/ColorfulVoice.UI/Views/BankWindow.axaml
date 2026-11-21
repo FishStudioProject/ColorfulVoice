@@ -1,11 +1,7 @@
-<suki:SukiWindow xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ColorfulVoice.Views.BankWindow"
-        xmlns:suki="https://github.com/kikipoulet/SukiUI"
         x:CompileBindings="False"
-        Title="音源管理器"
-        Width="860" Height="580"
-        Background="#FFFFFF"
         FontFamily="{StaticResource DefaultFontFamily}">
 
   <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="20">
@@ -18,18 +14,19 @@
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
         <Button Content="音源库…" Click="OnScanLibraryClick" Padding="12,6" />
         <Button Content="导入音源文件夹…" Click="OnImportFolderClick" Padding="12,6" />
+        <Button Content="导入 zip…" Click="OnImportZipClick" Padding="12,6" />
         <Button Content="选择 oto.ini…" Click="OnPickClick" Padding="12,6" />
       </StackPanel>
     </Grid>
 
     <ListBox x:Name="LibraryList" Grid.Row="1" IsVisible="False" MaxHeight="160"
-             SelectionChanged="OnLibrarySelectionChanged" Background="Transparent" />
+             SelectionChanged="OnLibrarySelectionChanged" />
 
     <Grid Grid.Row="2" ColumnDefinitions="*,16,*" Margin="0,14,0,0">
       <Border BorderBrush="#E4E6EF" BorderThickness="1" CornerRadius="8" Padding="10">
         <Grid RowDefinitions="Auto,*">
           <TextBlock Text="条目" FontSize="12" Foreground="#6E6E7A" Margin="2,0,0,6" />
-          <ListBox x:Name="EntriesList" Grid.Row="1" Background="Transparent">
+          <ListBox x:Name="EntriesList" Grid.Row="1">
             <ListBox.ItemTemplate>
               <DataTemplate>
                 <StackPanel Spacing="2" Margin="0,2">
@@ -45,7 +42,7 @@
       <Border Grid.Column="2" BorderBrush="#E4E6EF" BorderThickness="1" CornerRadius="8" Padding="10">
         <Grid RowDefinitions="Auto,*">
           <TextBlock x:Name="MissingTitle" Text="当前工程缺失别名" FontSize="12" Foreground="#B4553C" Margin="2,0,0,6" />
-          <ListBox x:Name="MissingList" Grid.Row="1" Background="Transparent">
+          <ListBox x:Name="MissingList" Grid.Row="1">
             <ListBox.ItemTemplate>
               <DataTemplate>
                 <TextBlock Text="{Binding}" FontSize="13" Foreground="#B4553C" Margin="0,2" />
@@ -60,4 +57,4 @@
       <Button Content="完成" Click="OnCloseClick" Padding="16,6" />
     </StackPanel>
   </Grid>
-</suki:SukiWindow>
+</UserControl>

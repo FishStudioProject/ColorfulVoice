@@ -115,22 +115,45 @@ public partial class MainView : UserControl
         ShowEditor();
     }
 
+        private TaskCompletionSource<bool>? _overlayResult;
+
+    private async Task<bool> ShowOverlayAsync(Control view, string title)
+    {
+        OverlayTitle.Text = title;
+        OverlayContent.Content = view;
+        Overlay.IsVisible = true;
+        _overlayResult = new TaskCompletionSource<bool>();
+
+        switch (view)
+        {
+            case Views.BankWindow b: b.Closed += CloseOverlay; break;
+            case Views.ProjectsWindow p: p.Closed += CloseOverlay; break;
+            case Views.NotePropertiesWindow n: n.Closed += CloseOverlay; break;
+            case Views.LyricsWindow l: l.Closed += CloseOverlay; break;
+        }
+
+        return await _overlayResult.Task;
+    }
+
+    private void CloseOverlay(bool result)
+    {
+        Overlay.IsVisible = false;
+        OverlayContent.Content = null;
+        _overlayResult?.TrySetResult(result);
+        _overlayResult = null;
+    }
+
+    private void OnOverlayClose(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => CloseOverlay(false);
+
     private async void OnContinueProject()
     {
-        var window = new ProjectsWindow();
-        window.OpenRequested += path =>
+        var view = new ProjectsWindow();
+        view.OpenRequested += path =>
         {
             OpenUst(path);
             ShowEditor();
         };
-        if (TopLevel.GetTopLevel(this) is Window owner)
-        {
-            await window.ShowDialog(owner);
-        }
-        else
-        {
-            StatusText.Text = "移动端暂不支持项目列表弹窗";
-        }
+        await ShowOverlayAsync(view, "最近项目");
     }
 
     private void ShowEditor()
@@ -141,16 +164,11 @@ public partial class MainView : UserControl
         UpdateHeaderInfo();
     }
 
-    private async void OnBankClick(object? sender, RoutedEventArgs e)
+        private async void OnBankClick(object? sender, RoutedEventArgs e)
     {
         var dialog = new Views.BankWindow(_otoPath, _notes.Select(n => n.Lyric));
-        if (TopLevel.GetTopLevel(this) is Window owner)
+        if (!await ShowOverlayAsync(dialog, "音源管理器"))
         {
-            await dialog.ShowDialog(owner);
-        }
-        else
-        {
-            StatusText.Text = "移动端暂不支持弹窗式音源管理器";
             return;
         }
         if (dialog.OtoPath is not null && dialog.OtoPath != _otoPath)
@@ -161,6 +179,39 @@ public partial class MainView : UserControl
             _rendered = null;
             UpdateHeaderInfo();
             StatusText.Text = $"已切换音源：{System.IO.Path.GetFileName(_voiceDir)}";
+        }
+    }
+
+    private async Task PickBankFolderAsync()
+    {
+        try
+        {
+            var folders = await StorageProvider.OpenFolderPickerAsync(new Avalonia.Platform.Storage.FolderPickerOpenOptions
+            {
+                Title = "选择 UTAU 音源文件夹（含 oto.ini）",
+                AllowMultiple = false,
+            });
+            if (folders.Count == 0)
+            {
+                return;
+            }
+            var dir = folders[0].Path.LocalPath;
+            var oto = System.IO.Path.Combine(dir, "oto.ini");
+            if (!System.IO.File.Exists(oto))
+            {
+                StatusText.Text = "该文件夹里没有 oto.ini";
+                return;
+            }
+            _otoPath = oto;
+            _voiceDir = dir;
+            _rendered?.Dispose();
+            _rendered = null;
+            UpdateHeaderInfo();
+            StatusText.Text = $"已切换音源：{System.IO.Path.GetFileName(dir)}";
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"选择音源失败：{ex.Message}";
         }
     }
 
@@ -194,9 +245,11 @@ public partial class MainView : UserControl
                 })
                 .ToList();
 
-            UstWriter.Save(file.Path.LocalPath, (float)Roll.Tempo, notes);
+            var temp = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "novavoice-save.ust");
+            UstWriter.Save(temp, (float)Roll.Tempo, notes);
+            await Services.FileStaging.WriteBackAsync(file, temp);
             UpdateHeaderInfo();
-            StatusText.Text = $"已保存 {System.IO.Path.GetFileName(file.Path.LocalPath)} · {notes.Count} 个音符";
+            StatusText.Text = $"已保存 {file.Name} · {notes.Count} 个音符";
         }
         catch (Exception ex)
         {
@@ -222,15 +275,31 @@ public partial class MainView : UserControl
         try
         {
             _rendered ??= NanoFish.Interop.NanoFish.RenderUst(_ustPath, _otoPath, _voiceDir);
+            var peak = 0f;
+            foreach (var sample in _rendered.Samples)
+            {
+                var value = MathF.Abs(sample);
+                if (value > peak) peak = value;
+            }
+            var info = NanoFish.Interop.NanoFish.LastRenderWarnings;
+
             _player = new AudioPlayback();
             _player.Load(_rendered.Samples);
             _player.Start();
             _playTimer.Start();
             PlayButton.Content = "⏸ 停止";
             Roll.Seek(0);
-            StatusText.Text = _player.IsNullBackend
-                ? $"试听中（无可用声卡，null 后端；PCM {_rendered.Length:N0} 帧）"
-                : $"试听中 · {_rendered.Length / (double)AudioPlayback.SampleRate:F1}s";
+
+            if (peak < 0.001f)
+            {
+                StatusText.Text = $"渲染结果是静音（peak={peak:0.000}，{_rendered.Length:N0} 帧）· {info}";
+            }
+            else
+            {
+                StatusText.Text = _player.IsNullBackend
+                    ? $"有声但无音频设备（peak={peak:0.00}，{_rendered.Length:N0} 帧）· {info}"
+                    : $"试听中 · {_rendered.Length / (double)AudioPlayback.SampleRate:F1}s · {info}";
+            }
         }
         catch (Exception ex)
         {
@@ -273,7 +342,7 @@ public partial class MainView : UserControl
         });
         if (files.Count > 0)
         {
-            OpenUst(files[0].Path.LocalPath);
+            OpenUst(await Services.FileStaging.StageReadAsync(files[0]));
             ShowEditor();
         }
     }
@@ -327,18 +396,12 @@ public partial class MainView : UserControl
         return string.Join("\n", lines);
     }
 
-    private async void OnNoteDoubleClicked(PianoNote note)
+        private async void OnNoteDoubleClicked(PianoNote note)
     {
         try
         {
-            if (TopLevel.GetTopLevel(this) is not Window owner)
-            {
-                StatusText.Text = "移动端暂不支持属性面板，请用桌面版编辑";
-                return;
-            }
             var dialog = new Views.NotePropertiesWindow(note);
-            var ok = await dialog.ShowDialog<bool>(owner);
-            if (ok)
+            if (await ShowOverlayAsync(dialog, "音符属性"))
             {
                 Roll.InvalidateVisual();
                 StatusText.Text = $"音符 #{note.Id} 已更新（{note.Lyric} · {note.NoteNum} · {note.LengthTicks} tick · vel {note.Velocity}）";
@@ -357,17 +420,12 @@ public partial class MainView : UserControl
         StatusText.Text = on ? "呼吸音已开启（休止处插 br）" : "呼吸音已关闭";
     }
 
-    private async void OnLyricsClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        private async void OnLyricsClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         try
         {
-            if (TopLevel.GetTopLevel(this) is not Window owner)
-            {
-                StatusText.Text = "移动端暂不支持批量歌词弹窗";
-                return;
-            }
             var dialog = new Views.LyricsWindow();
-            if (!await dialog.ShowDialog<bool>(owner) || dialog.Syllables.Length == 0)
+            if (!await ShowOverlayAsync(dialog, "批量歌词") || dialog.Syllables.Length == 0)
             {
                 return;
             }

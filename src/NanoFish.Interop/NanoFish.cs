@@ -83,6 +83,16 @@ public static class NanoFish
         }
     }
 
+    /// <summary>最近一次渲染的统计与警告（引擎内记录，手机端用来诊断）。</summary>
+    public static string LastRenderWarnings
+    {
+        get
+        {
+            var ptr = NativeMethods.nanofish_last_warnings();
+            return ptr == IntPtr.Zero ? string.Empty : Marshal.PtrToStringAnsi(ptr) ?? string.Empty;
+        }
+    }
+
     public static string Version =>
         Marshal.PtrToStringUTF8(NativeMethods.nanofish_version()) ?? string.Empty;
 

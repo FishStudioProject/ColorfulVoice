@@ -7,7 +7,7 @@
   <Application.Resources>
     <ResourceDictionary>
       <!-- SukiUI 官方字体入口 -->
-      <FontFamily x:Key="DefaultFontFamily">avares://ColorfulVoice.UI/Assets/Fonts#Google Sans Flex</FontFamily>
+      <FontFamily x:Key="DefaultFontFamily">avares://ColorfulVoice.UI/Assets/Fonts#Google Sans Flex, avares://ColorfulVoice.UI/Assets/Fonts#Noto Sans SC</FontFamily>
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://ColorfulVoice.UI/PhosphorIcons.axaml" />
       </ResourceDictionary.MergedDictionaries>

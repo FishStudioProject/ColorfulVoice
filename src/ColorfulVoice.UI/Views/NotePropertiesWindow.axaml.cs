@@ -1,12 +1,14 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using ColorfulVoice.Controls;
-using SukiUI.Controls;
 
 namespace ColorfulVoice.Views;
 
-public partial class NotePropertiesWindow : SukiWindow
+public partial class NotePropertiesWindow : UserControl
 {
+    /// <summary>浮层关闭时触发（true = 确认）。</summary>
+    public event Action<bool>? Closed;
+
     private readonly PianoNote _note;
 
     public NotePropertiesWindow(PianoNote note)
@@ -29,8 +31,8 @@ public partial class NotePropertiesWindow : SukiWindow
         _note.Velocity = (int)(VelocityBox.Value ?? _note.Velocity);
         _note.VibratoDepth = (double)(VibratoDepthBox.Value ?? (decimal)_note.VibratoDepth);
         _note.VibratoPeriod = (double)(VibratoPeriodBox.Value ?? (decimal)_note.VibratoPeriod);
-        Close(true);
+        Closed?.Invoke(true);
     }
 
-    private void OnCancel(object? sender, RoutedEventArgs e) => Close(false);
+    private void OnCancel(object? sender, RoutedEventArgs e) => Closed?.Invoke(false);
 }

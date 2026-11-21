@@ -91,6 +91,20 @@
                TextTrimming="CharacterEllipsis"
                Text="正在调用 NanoFish…" />
     </Grid>
+
+    <!-- 页面内浮层：Android 单视图不能创建 Window，所有二级界面都挂在这里 -->
+    <Border x:Name="Overlay" IsVisible="False" Background="#FFFFFF">
+      <Grid RowDefinitions="Auto,*">
+        <Grid ColumnDefinitions="Auto,*" Margin="16,12,16,8">
+          <Button Classes="tool" ToolTip.Tip="返回" Click="OnOverlayClose">
+            <PathIcon Width="18" Height="18" Data="{DynamicResource PhHouse}" />
+          </Button>
+          <TextBlock x:Name="OverlayTitle" Grid.Column="1" Margin="10,0,0,0"
+                     VerticalAlignment="Center" FontSize="16" FontWeight="SemiBold" Foreground="#15151C" />
+        </Grid>
+        <ContentControl x:Name="OverlayContent" Grid.Row="1" Margin="16,0,16,16" />
+      </Grid>
+    </Border>
   </Grid>
 
 </UserControl>

@@ -41,6 +41,9 @@ internal static class NativeMethods
     [DllImport(Lib, EntryPoint = "nanofish_rms", CallingConvention = CallingConvention.Cdecl)]
     internal static extern float nanofish_rms(IntPtr data, UIntPtr len);
 
+    [DllImport(Lib, EntryPoint = "nanofish_last_warnings", CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr nanofish_last_warnings();
+
     [DllImport(Lib, EntryPoint = "nanofish_set_breath_alias", CallingConvention = CallingConvention.Cdecl)]
     internal static extern int nanofish_set_breath_alias(IntPtr alias);
 

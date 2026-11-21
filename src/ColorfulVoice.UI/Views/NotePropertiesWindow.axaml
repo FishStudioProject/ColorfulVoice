@@ -1,10 +1,6 @@
-<suki:SukiWindow xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                 xmlns:suki="https://github.com/kikipoulet/SukiUI"
-                 x:Class="ColorfulVoice.Views.NotePropertiesWindow"
-                 Title="音符属性" Width="380" Height="430"
-                 CanResize="False" WindowStartupLocation="CenterOwner"
-                 Background="#FFFFFF">
+                 x:Class="ColorfulVoice.Views.NotePropertiesWindow">
   <StackPanel Margin="20" Spacing="12">
     <TextBlock Text="歌词" Foreground="#6E6E7A" FontSize="12" />
     <TextBox x:Name="LyricBox" FontSize="16" />
@@ -41,4 +37,4 @@
       <Button Content="确定" Click="OnOk" Padding="16,6" Classes="Accent" />
     </StackPanel>
   </StackPanel>
-</suki:SukiWindow>
+</UserControl>

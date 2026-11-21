@@ -208,7 +208,13 @@ static int BankShot(string[] args)
         .SetupWithoutStarting();
 
     var lyrics = new[] { "- か", "a か", "i か", "x 缺失" };
-    var window = new ColorfulVoice.Views.BankWindow(oto, lyrics) { Width = 860, Height = 580 };
+    var window = new Avalonia.Controls.Window
+    {
+        Title = "音源管理器",
+        Width = 860,
+        Height = 580,
+        Content = new ColorfulVoice.Views.BankWindow(oto, lyrics),
+    };
     window.Show();
     Dispatcher.UIThread.RunJobs();
     AvaloniaHeadlessPlatform.ForceRenderTimerTick();

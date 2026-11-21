@@ -8,10 +8,38 @@ namespace ColorfulVoice;
 
 public partial class App : Application
 {
-    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+    public override void Initialize()
+    {
+        Trace("App.Initialize start");
+        try
+        {
+            AvaloniaXamlLoader.Load(this);
+            Trace("App.Initialize done");
+        }
+        catch (Exception ex)
+        {
+            Trace("App.Initialize failed: " + ex);
+            throw;
+        }
+    }
+
+    /// <summary>宿主可注入的启动追踪钩子（Android 侧写入日志文件）。</summary>
+    public static Action<string>? TraceHook;
+
+    private static void Trace(string message)
+    {
+        try
+        {
+            TraceHook?.Invoke(message);
+        }
+        catch
+        {
+        }
+    }
 
     public override void OnFrameworkInitializationCompleted()
     {
+        Trace("OnFrameworkInitialization start");
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow();
@@ -22,6 +50,7 @@ public partial class App : Application
             singleView.MainView = new MainView();
         }
 
+        Trace("MainView assigned");
         base.OnFrameworkInitializationCompleted();
     }
 }

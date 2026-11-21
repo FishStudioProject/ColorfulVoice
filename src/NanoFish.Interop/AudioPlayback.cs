@@ -47,7 +47,11 @@ public sealed class AudioPlayback : IDisposable
         {
             return;
         }
-        Pump();
+        // 先把环形缓冲填到一半以上再启动，避免开头几拍欠载
+        for (var i = 0; i < 8 && QueuedFrames < SampleRate / 2; i++)
+        {
+            Pump();
+        }
         IsPlaying = NativeMethods.nanofish_player_start(_player) == 0;
     }
 
@@ -68,7 +72,8 @@ public sealed class AudioPlayback : IDisposable
         {
             return;
         }
-        var chunk = Math.Min(SampleRate / 4, _samples.Length - _cursor);
+        // 每次补 1 秒，UI 定时器偶尔抖动也不会断流
+        var chunk = Math.Min(SampleRate, _samples.Length - _cursor);
         unsafe
         {
             fixed (float* p = &_samples[_cursor])

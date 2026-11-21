@@ -1,14 +1,17 @@
 using Avalonia.Controls;
-using SukiUI.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Controls;
 using NanoFish.Interop;
 
 namespace ColorfulVoice.Views;
 
-public partial class ProjectsWindow : SukiWindow
+public partial class ProjectsWindow : UserControl
 {
+    /// <summary>浮层关闭时触发（true = 确认）。</summary>
+    public event Action<bool>? Closed;
+
     public event Action<string>? OpenRequested;
 
     public ProjectsWindow()
@@ -23,7 +26,7 @@ public partial class ProjectsWindow : SukiWindow
         if (ProjectList.SelectedItem is RecentProject p)
         {
             OpenRequested?.Invoke(p.Path);
-            Close();
+            Closed?.Invoke(true);
         }
     }
 
@@ -32,7 +35,7 @@ public partial class ProjectsWindow : SukiWindow
         if (Selected() is { } p)
         {
             OpenRequested?.Invoke(p.Path);
-            Close();
+            Closed?.Invoke(true);
         }
     }
 
@@ -54,7 +57,7 @@ public partial class ProjectsWindow : SukiWindow
             }
 
             using var pcm = NanoFish.Interop.NanoFish.RenderUst(project.Path, oto, System.IO.Path.GetDirectoryName(oto)!);
-            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            var file = await (TopLevel.GetTopLevel(this)?.StorageProvider ?? throw new InvalidOperationException("no storage"))!.SaveFilePickerAsync(new FilePickerSaveOptions
             {
                 Title = "导出 WAV",
                 SuggestedFileName = project.Name + ".wav",
@@ -64,8 +67,10 @@ public partial class ProjectsWindow : SukiWindow
             {
                 return;
             }
-            WavWriter.Save(file.Path.LocalPath, pcm.Samples, (int)pcm.SampleRate);
-            HintText.Text = $"已导出 {file.Path.LocalPath}";
+            var temp = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "novavoice-export.wav");
+            WavWriter.Save(temp, pcm.Samples, (int)pcm.SampleRate);
+            await Services.FileStaging.WriteBackAsync(file, temp);
+            HintText.Text = $"已导出 {file.Name}";
         }
         catch (Exception ex)
         {
