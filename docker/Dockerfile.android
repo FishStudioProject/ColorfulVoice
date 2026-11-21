@@ -1,0 +1,22 @@
+# x86_64 打包环境：.NET Android workload + Android SDK/NDK + cargo-ndk
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openjdk-17-jdk-headless unzip curl ca-certificates && rm -rf /var/lib/apt/lists/*
+
+RUN dotnet workload install android
+
+ENV ANDROID_HOME=/opt/android-sdk
+RUN mkdir -p "$ANDROID_HOME/cmdline-tools" \
+ && curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/t.zip \
+ && unzip -q /tmp/t.zip -d "$ANDROID_HOME/cmdline-tools" \
+ && mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest" \
+ && yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" --licenses >/dev/null \
+ && "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" \
+      "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;26.1.10909125"
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+ENV PATH="/root/.cargo/bin:$PATH"
+RUN cargo install cargo-ndk
+
+WORKDIR /src
