@@ -13,6 +13,7 @@
       <Setter Property="FontWeight" Value="SemiBold" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
       <Setter Property="Padding" Value="26,0" />
     </Style>
     <Style Selector="Button.home:pointerover /template/ ContentPresenter">
@@ -33,19 +34,51 @@
       </StackPanel>
 
       <StackPanel Grid.Column="1" Width="380" Spacing="16" VerticalAlignment="Center">
-        <Button Classes="home" Content="＋  创建新作品" Click="OnNewClick" />
-        <Button Classes="home" Content="＝  继续项目" Click="OnContinueClick" />
-        <Button Classes="home" Content="↓  导入项目" Click="OnImportClick" />
+        <Button Classes="home" Click="OnNewClick">
+          <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+            <PathIcon Width="24" Height="24" Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+            <TextBlock Text="创建新作品" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Button Classes="home" Click="OnContinueClick">
+          <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+            <PathIcon Width="24" Height="24" Data="M8,5.14V19.14L19,12.14L8,5.14Z" />
+            <TextBlock Text="继续项目" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Button Classes="home" Click="OnImportClick">
+          <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+            <PathIcon Width="24" Height="24" Data="M19,9H15V3H9V9H5L12,16L19,9M5,18V20H19V18H5Z" />
+            <TextBlock Text="导入项目" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
       </StackPanel>
 
       <Border Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Center"
               Background="#F2F3F7" BorderBrush="#E3E5EE" BorderThickness="1"
               CornerRadius="28" Padding="26,12" Margin="0,24,0,0">
-        <StackPanel Orientation="Horizontal" Spacing="26">
-          <TextBlock Text="⌂" FontSize="18" Foreground="#5B6FC4" />
-          <TextBlock Text="♪" FontSize="18" Foreground="#9A9AA6" />
-          <TextBlock Text="☰" FontSize="18" Foreground="#9A9AA6" />
-          <TextBlock Text="⚙" FontSize="18" Foreground="#9A9AA6" />
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <Button Padding="16,8" FontSize="13" CornerRadius="18"
+                  Background="#FFFFFF" Foreground="#15151C">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <PathIcon Width="15" Height="15"
+                        Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
+              <TextBlock Text="首页" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Padding="16,8" FontSize="13" CornerRadius="18"
+                  Background="#FFFFFF" Foreground="#15151C">
+            <Button.Flyout>
+              <MenuFlyout>
+                <MenuItem Header="音源管理…" Click="OnVoicebankClick" />
+              </MenuFlyout>
+            </Button.Flyout>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <PathIcon Width="15" Height="15"
+                        Data="M6,8C4.9,8 4,8.9 4,10C4,11.1 4.9,12 6,12C7.1,12 8,11.1 8,10C8,8.9 7.1,8 6,8M12,8C10.9,8 10,8.9 10,10C10,11.1 10.9,12 12,12C13.1,12 14,11.1 14,10C14,8.9 13.1,8 12,8M18,8C16.9,8 16,8.9 16,10C16,11.1 16.9,12 18,12C19.1,12 20,11.1 20,10C20,8.9 19.1,8 18,8Z" />
+              <TextBlock Text="更多" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
         </StackPanel>
       </Border>
     </Grid>
@@ -58,19 +91,51 @@
       </StackPanel>
 
       <StackPanel Grid.Row="1" Spacing="16" Margin="0,40,0,0">
-        <Button Classes="home" Height="84" Content="＋  创建新作品" Click="OnNewClick" />
-        <Button Classes="home" Height="84" Content="＝  继续项目" Click="OnContinueClick" />
-        <Button Classes="home" Height="84" Content="↓  导入项目" Click="OnImportClick" />
+        <Button Classes="home" Click="OnNewClick">
+          <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+            <PathIcon Width="24" Height="24" Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+            <TextBlock Text="创建新作品" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Button Classes="home" Click="OnContinueClick">
+          <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+            <PathIcon Width="24" Height="24" Data="M8,5.14V19.14L19,12.14L8,5.14Z" />
+            <TextBlock Text="继续项目" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Button Classes="home" Click="OnImportClick">
+          <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+            <PathIcon Width="24" Height="24" Data="M19,9H15V3H9V9H5L12,16L19,9M5,18V20H19V18H5Z" />
+            <TextBlock Text="导入项目" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
       </StackPanel>
 
       <Border Grid.Row="3" HorizontalAlignment="Center"
               Background="#F2F3F7" BorderBrush="#E3E5EE" BorderThickness="1"
               CornerRadius="28" Padding="26,12" Margin="0,24,0,0">
-        <StackPanel Orientation="Horizontal" Spacing="26">
-          <TextBlock Text="⌂" FontSize="18" Foreground="#5B6FC4" />
-          <TextBlock Text="♪" FontSize="18" Foreground="#9A9AA6" />
-          <TextBlock Text="☰" FontSize="18" Foreground="#9A9AA6" />
-          <TextBlock Text="⚙" FontSize="18" Foreground="#9A9AA6" />
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <Button Padding="16,8" FontSize="13" CornerRadius="18"
+                  Background="#FFFFFF" Foreground="#15151C">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <PathIcon Width="15" Height="15"
+                        Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
+              <TextBlock Text="首页" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Padding="16,8" FontSize="13" CornerRadius="18"
+                  Background="#FFFFFF" Foreground="#15151C">
+            <Button.Flyout>
+              <MenuFlyout>
+                <MenuItem Header="音源管理…" Click="OnVoicebankClick" />
+              </MenuFlyout>
+            </Button.Flyout>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <PathIcon Width="15" Height="15"
+                        Data="M6,8C4.9,8 4,8.9 4,10C4,11.1 4.9,12 6,12C7.1,12 8,11.1 8,10C8,8.9 7.1,8 6,8M12,8C10.9,8 10,8.9 10,10C10,11.1 10.9,12 12,12C13.1,12 14,11.1 14,10C14,8.9 13.1,8 12,8M18,8C16.9,8 16,8.9 16,10C16,11.1 16.9,12 18,12C19.1,12 20,11.1 20,10C20,8.9 19.1,8 18,8Z" />
+              <TextBlock Text="更多" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
         </StackPanel>
       </Border>
     </Grid>

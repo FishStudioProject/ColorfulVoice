@@ -54,6 +54,45 @@ public partial class BankWindow : Window
         }
     }
 
+    private async void OnImportFolderClick(object? sender, RoutedEventArgs e)
+    {
+        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "选择 UTAU 音源文件夹（含 oto.ini）",
+            AllowMultiple = false,
+        });
+        if (folders.Count == 0)
+        {
+            return;
+        }
+        var dir = folders[0].Path.LocalPath;
+        try
+        {
+            using var bank = Voicebank.Open(dir);
+            _voicebank = bank.Name;
+            SetBank(System.IO.Path.Combine(dir, "oto.ini"));
+            SummaryText.Text += $"  ·  音源「{bank.Name}」（{bank.KindLabel}，{bank.AliasCount} 个别名）";
+
+            var preview = new List<string>();
+            string? prev = null;
+            foreach (var lyric in _projectLyrics.Take(8))
+            {
+                var alias = bank.Resolve(prev, lyric);
+                preview.Add($"{lyric}→{alias ?? "∅"}");
+                prev = lyric;
+            }
+            PhonemeText.Text = preview.Count == 0
+                ? "音素器：工程里还没有歌词"
+                : "音素预览：" + string.Join("  ·  ", preview);
+        }
+        catch (Exception ex)
+        {
+            SummaryText.Text = $"导入失败：{ex.Message}";
+        }
+    }
+
+    private string? _voicebank;
+
     private async void OnPickClick(object? sender, RoutedEventArgs e)
     {
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions

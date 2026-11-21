@@ -11,8 +11,12 @@
       <StackPanel Spacing="4">
         <TextBlock x:Name="PathText" Text="未选择音源" FontSize="16" FontWeight="SemiBold" Foreground="#15151C" />
         <TextBlock x:Name="SummaryText" Text="选择 oto.ini 后可查看条目与缺失别名" FontSize="12" Foreground="#6E6E7A" />
+        <TextBlock x:Name="PhonemeText" Text="" FontSize="12" Foreground="#1F9E8F" TextWrapping="Wrap" />
       </StackPanel>
-      <Button Grid.Column="1" Content="选择 oto.ini…" Click="OnPickClick" Padding="12,6" VerticalAlignment="Center" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <Button Content="导入音源文件夹…" Click="OnImportFolderClick" Padding="12,6" />
+        <Button Content="选择 oto.ini…" Click="OnPickClick" Padding="12,6" />
+      </StackPanel>
     </Grid>
 
     <Grid Grid.Row="2" ColumnDefinitions="*,16,*" Margin="0,14,0,0">

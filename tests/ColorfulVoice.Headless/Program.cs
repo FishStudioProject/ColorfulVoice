@@ -11,6 +11,11 @@ if (args.Contains("--self-test"))
     return SelfTest();
 }
 
+if (args.Contains("--bank-test"))
+{
+    return BankTest(args);
+}
+
 if (args.Contains("--bank-window"))
 {
     return BankShot(args);
@@ -225,4 +230,19 @@ static int PitchTest()
 
     Console.WriteLine(ok ? "音高曲线往返 OK" : $"音高曲线往返失败:\n{rebuilt}");
     return ok ? 0 : 1;
+}
+
+static int BankTest(string[] args)
+{
+    var dir = args[Array.IndexOf(args, "--bank-test") + 1];
+    using var bank = NanoFish.Interop.Voicebank.Open(dir);
+    Console.WriteLine($"音源: {bank.Name} ({bank.KindLabel}) aliases={bank.AliasCount}");
+
+    string? prev = null;
+    foreach (var lyric in new[] { "a", "i", "u", "e", "o" })
+    {
+        Console.WriteLine($"  {lyric} -> {bank.Resolve(prev, lyric) ?? "(none)"}");
+        prev = lyric;
+    }
+    return 0;
 }

@@ -18,6 +18,7 @@ public enum NfStatus
     Ok = 0,
     InvalidArgument = 1,
     NullPointer = 2,
+    Io = 3,
 }
 
 internal static class NativeMethods
@@ -53,6 +54,23 @@ internal static class NativeMethods
 
     [DllImport(Lib, EntryPoint = "nanofish_free_oto", CallingConvention = CallingConvention.Cdecl)]
     internal static extern void nanofish_free_oto(ref NfOtoBankNative bank);
+
+    [DllImport(Lib, EntryPoint = "nanofish_voicebank_open", CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr nanofish_voicebank_open([MarshalAs(UnmanagedType.LPUTF8Str)] string directory);
+
+    [DllImport(Lib, EntryPoint = "nanofish_voicebank_info", CallingConvention = CallingConvention.Cdecl)]
+    internal static extern int nanofish_voicebank_info(IntPtr vb, out NfVoicebankInfoNative info);
+
+    [DllImport(Lib, EntryPoint = "nanofish_voicebank_resolve", CallingConvention = CallingConvention.Cdecl)]
+    internal static extern int nanofish_voicebank_resolve(
+        IntPtr vb,
+        [MarshalAs(UnmanagedType.LPUTF8Str)] string? previous,
+        [MarshalAs(UnmanagedType.LPUTF8Str)] string lyric,
+        byte[] output,
+        nuint capacity);
+
+    [DllImport(Lib, EntryPoint = "nanofish_voicebank_free", CallingConvention = CallingConvention.Cdecl)]
+    internal static extern void nanofish_voicebank_free(IntPtr vb);
 
     [DllImport(Lib, EntryPoint = "nanofish_save_ust", CallingConvention = CallingConvention.Cdecl)]
     internal static extern unsafe int nanofish_save_ust(

@@ -30,6 +30,7 @@ public partial class MainView : UserControl
         Home.NewProject += OnNewProject;
         Home.ContinueProject += OnContinueProject;
         Home.ImportProject += async () => await PickAndOpenUst();
+        Home.VoicebankRequested += () => OnBankClick(this, new RoutedEventArgs());
 
         BuildDemoNotes();
         Roll.Notes = _notes;
@@ -93,12 +94,9 @@ public partial class MainView : UserControl
             Toolbar.Classes.Remove("compact");
         }
 
-        // 窄屏只留"主页 / 预览 / ⋯"，其余收进菜单
-        MoreButton.IsVisible = compact;
-        foreach (var button in new[] { BankButton, SaveButton, ExportButton, OpenUstButton })
-        {
-            button.IsVisible = !compact;
-        }
+        // 窄屏只留"主页 / 预览 / ⋯"
+        MoreButton.IsVisible = true;
+        SaveButton.IsVisible = !compact;
         TitleBlock.Margin = compact ? new Avalonia.Thickness(0, 0, 0, 0) : default;
     }
     private void OnBackClick(object? sender, RoutedEventArgs e)
@@ -116,15 +114,22 @@ public partial class MainView : UserControl
         ShowEditor();
     }
 
-    private void OnContinueProject()
+    private async void OnContinueProject()
     {
-        if (_notes.Count == 0)
+        var window = new ProjectsWindow();
+        window.OpenRequested += path =>
         {
-            BuildDemoNotes();
-            Roll.Notes = _notes;
+            OpenUst(path);
+            ShowEditor();
+        };
+        if (TopLevel.GetTopLevel(this) is Window owner)
+        {
+            await window.ShowDialog(owner);
         }
-        SubtitleText.Text = $"继续项目 · {_notes.Count} 个音符";
-        ShowEditor();
+        else
+        {
+            StatusText.Text = "移动端暂不支持项目列表弹窗";
+        }
     }
 
     private void ShowEditor()
@@ -193,36 +198,6 @@ public partial class MainView : UserControl
         }
     }
 
-    private async void OnExportClick(object? sender, RoutedEventArgs e)
-    {
-        if (_ustPath is null || _otoPath is null || _voiceDir is null)
-        {
-            StatusText.Text = "没有可导出的音源路径";
-            return;
-        }
-        try
-        {
-            _rendered ??= NanoFish.Interop.NanoFish.RenderUst(_ustPath, _otoPath, _voiceDir);
-            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-            {
-                Title = "导出 WAV",
-                SuggestedFileName = "novavoice-preview.wav",
-                DefaultExtension = "wav",
-            });
-            if (file is null)
-            {
-                return;
-            }
-            var path = file.Path.LocalPath;
-            WavWriter.Save(path, _rendered.Samples, (int)_rendered.SampleRate);
-            StatusText.Text = $"已导出 {path}（{_rendered.Length / (double)_rendered.SampleRate:F1}s）";
-        }
-        catch (Exception ex)
-        {
-            StatusText.Text = $"导出失败：{ex.Message}";
-        }
-    }
-
     private void OnPlayClick(object? sender, RoutedEventArgs e) => TogglePlayback();
 
     private void TogglePlayback()
@@ -281,8 +256,6 @@ public partial class MainView : UserControl
         _player = null;
         PlayButton.Content = "▶ 预览";
     }
-
-    private async void OnOpenUstClick(object? sender, RoutedEventArgs e) => await PickAndOpenUst();
 
     private async Task PickAndOpenUst()
     {
@@ -351,6 +324,7 @@ public partial class MainView : UserControl
                 ? $"已加载 {doc.Notes.Count} 个音符；未找到 oto.ini，无法试听"
                 : $"已加载 {doc.Notes.Count} 个音符；音源 {_voiceDir}")
                 + " · 双击音符添加音高曲线，拖动圆点调整";
+            RecentProjects.Add(path);
             ShowEditor();
         }
         catch (Exception ex)

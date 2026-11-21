@@ -27,20 +27,15 @@
       <WrapPanel x:Name="Toolbar" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
         <Button x:Name="BackButton" Content="‹ 主页" Click="OnBackClick" Padding="12,6" />
         <Button x:Name="PlayButton" Content="▶ 预览" Click="OnPlayClick" Padding="12,6" />
-        <Button x:Name="MoreButton" Content="⋯" IsVisible="False" Padding="12,6">
+        <Button x:Name="SaveButton" Content="保存 UST" Click="OnSaveClick" Padding="12,6" />
+        <Button x:Name="MoreButton" Content="⋯" Padding="12,6">
           <Button.Flyout>
             <MenuFlyout>
               <MenuItem Header="音源管理器…" Click="OnBankClick" />
               <MenuItem Header="保存 UST" Click="OnSaveClick" />
-              <MenuItem Header="导出 WAV" Click="OnExportClick" />
-              <MenuItem Header="打开 UST…" Click="OnOpenUstClick" />
             </MenuFlyout>
           </Button.Flyout>
         </Button>
-        <Button x:Name="BankButton" Content="音源" Click="OnBankClick" Padding="12,6" />
-        <Button x:Name="SaveButton" Content="保存 UST" Click="OnSaveClick" Padding="12,6" />
-        <Button x:Name="ExportButton" Content="导出 WAV" Click="OnExportClick" Padding="12,6" />
-        <Button x:Name="OpenUstButton" Content="打开 UST…" Click="OnOpenUstClick" Padding="12,6" />
         <TextBlock x:Name="BadgeText" VerticalAlignment="Center"
                    FontSize="12" Foreground="#5B6FC4"
                    Text="Skia 自绘 · 零拷贝 PCM" />
