@@ -2,31 +2,40 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:ColorfulVoice.Controls"
         x:Class="ColorfulVoice.MainWindow"
-        Title="ColorfulVoice — Phase 0 握手"
-        Width="960" Height="420"
-        MinWidth="640" MinHeight="280"
+        Title="ColorfulVoice — 钢琴卷帘"
+        Width="1080" Height="640"
+        MinWidth="720" MinHeight="420"
         Background="#0E0E14">
 
   <Grid RowDefinitions="Auto,*,Auto" Margin="16">
-    <StackPanel Grid.Row="0" Spacing="2" Margin="0,0,0,12">
-      <TextBlock Text="ColorfulVoice" FontSize="22" FontWeight="SemiBold" Foreground="#F2F2F7" />
-      <TextBlock x:Name="SubtitleText"
-                 Text="NanoFish 引擎握手验证"
-                 FontSize="12" Foreground="#8E8E9A" />
-    </StackPanel>
-
-    <Border Grid.Row="1" CornerRadius="8" ClipToBounds="True" BorderBrush="#22222E" BorderThickness="1">
-      <controls:WaveformView x:Name="Waveform" />
-    </Border>
-
-    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,12,0,0">
-      <TextBlock x:Name="StatusText"
-                 VerticalAlignment="Center"
-                 FontSize="12" Foreground="#8E8E9A"
-                 Text="正在调用 NanoFish…" />
-      <TextBlock Grid.Column="1"
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+      <StackPanel Spacing="2">
+        <TextBlock Text="ColorfulVoice" FontSize="22" FontWeight="SemiBold" Foreground="#F2F2F7" />
+        <TextBlock x:Name="SubtitleText"
+                   Text="NanoFish 引擎握手验证"
+                   FontSize="12" Foreground="#8E8E9A" />
+      </StackPanel>
+      <TextBlock Grid.Column="1" VerticalAlignment="Center"
                  FontSize="12" Foreground="#4FD1C5"
-                 Text="零拷贝 · Span&lt;float&gt; → 原生内存" />
+                 Text="Skia 自绘 · 零拷贝 PCM" />
     </Grid>
+
+    <TabControl Grid.Row="1" Padding="0">
+      <TabItem Header="钢琴卷帘">
+        <Border CornerRadius="8" ClipToBounds="True" BorderBrush="#22222E" BorderThickness="1">
+          <controls:PianoRoll x:Name="Roll" />
+        </Border>
+      </TabItem>
+      <TabItem Header="波形">
+        <Border CornerRadius="8" ClipToBounds="True" BorderBrush="#22222E" BorderThickness="1">
+          <controls:WaveformView x:Name="Waveform" />
+        </Border>
+      </TabItem>
+    </TabControl>
+
+    <TextBlock x:Name="StatusText" Grid.Row="2"
+               Margin="0,10,0,0"
+               FontSize="12" Foreground="#8E8E9A"
+               Text="正在调用 NanoFish…" />
   </Grid>
 </Window>
