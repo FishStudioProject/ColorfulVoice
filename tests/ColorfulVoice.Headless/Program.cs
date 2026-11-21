@@ -153,7 +153,7 @@ static int SelfTest()
 
 static int AudioTest()
 {
-    var root = "/root/workspace/NovaVoice/NanoFish/tests/data";
+    var root = "/root/workspace/ColorfulVoice/NanoFish/tests/data";
     var ust = Path.Combine(root, "demo.ust");
     var oto = Path.Combine(root, "voicebank", "oto.ini");
     var dir = Path.Combine(root, "voicebank");
@@ -180,7 +180,7 @@ static int AudioTest()
 
 static int SaveTest()
 {
-    var src = "/root/workspace/NovaVoice/NanoFish/tests/data/handshake.ust";
+    var src = "/root/workspace/ColorfulVoice/NanoFish/tests/data/handshake.ust";
     var dst = "/tmp/ui-roundtrip.ust";
     var doc = NanoFish.Interop.UstLoader.Load(src);
     Console.WriteLine($"加载: {doc.Notes.Count} 个音符, tempo {doc.Tempo}");

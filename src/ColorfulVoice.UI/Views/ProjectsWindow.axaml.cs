@@ -67,7 +67,7 @@ public partial class ProjectsWindow : UserControl
             {
                 return;
             }
-            var temp = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "novavoice-export.wav");
+            var temp = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "colorfulvoice-export.wav");
             WavWriter.Save(temp, pcm.Samples, (int)pcm.SampleRate);
             await Services.FileStaging.WriteBackAsync(file, temp);
             HintText.Text = $"已导出 {file.Name}";

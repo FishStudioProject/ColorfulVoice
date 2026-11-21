@@ -23,7 +23,7 @@ public static class BankLibrary
         {
             var dir = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "NovaVoice");
+                "ColorfulVoice");
             Directory.CreateDirectory(dir);
             return Path.Combine(dir, "banks.json");
         }

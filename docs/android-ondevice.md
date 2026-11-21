@@ -39,7 +39,7 @@ dotnet build ColorfulVoice/src/ColorfulVoice.Android/ColorfulVoice.Android.cspro
   -p:AndroidEnableMarshalMethods=false
 ```
 
-产物：`bin/Debug/net9.0-android/com.novavoice.colorfulvoice-Signed.apk`（约 9.5 MB）。
+产物：`bin/Debug/net9.0-android/com.colorfulvoice.app-Signed.apk`（约 9.5 MB）。
 
 ## 已知限制
 

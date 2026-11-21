@@ -14,7 +14,7 @@ public static class RecentProjects
 {
     private static readonly string FilePath = System.IO.Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "NovaVoice", "recent.json");
+        "ColorfulVoice", "recent.json");
 
     private static List<RecentProject>? _items;
 

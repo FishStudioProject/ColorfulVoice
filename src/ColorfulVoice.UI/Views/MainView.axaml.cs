@@ -245,7 +245,7 @@ public partial class MainView : UserControl
                 })
                 .ToList();
 
-            var temp = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "novavoice-save.ust");
+            var temp = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "colorfulvoice-save.ust");
             UstWriter.Save(temp, (float)Roll.Tempo, notes);
             await Services.FileStaging.WriteBackAsync(file, temp);
             UpdateHeaderInfo();

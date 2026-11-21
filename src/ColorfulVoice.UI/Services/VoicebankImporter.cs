@@ -30,7 +30,7 @@ public static class VoicebankImporter
             }
         }
 
-        var target = Path.Combine(Path.GetTempPath(), "novavoice-banks", Sanitize(folder.Name));
+        var target = Path.Combine(Path.GetTempPath(), "colorfulvoice-banks", Sanitize(folder.Name));
         Directory.CreateDirectory(target);
 
         var copied = 0;

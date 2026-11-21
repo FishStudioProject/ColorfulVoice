@@ -1,4 +1,4 @@
-# NovaVoice
+# ColorfulVoice
 
 引擎与宿主绝对分离的歌声合成器：
 
@@ -6,34 +6,27 @@
 - **ColorfulVoice**（Avalonia / C#）：Skia 自绘 UI 与业务逻辑，通过 P/Invoke 直接映射 Rust 内存。
 
 ```
-NovaVoice/
-├── ../NanoFish/                 # Rust 引擎
-│   ├── src/audio.rs          # 纯计算层（正弦波 / RMS，rayon 并行）
-│   ├── src/ffi.rs            # C ABI：指针 + 长度，所有权交给宿主
-│   ├── src/player.rs         # 原生播放器（miniaudio，null 后端回退）
-│   ├── src/audio_shim.c      # miniaudio C 封装（环形缓冲 + 设备回调）
-│   ├── third_party/miniaudio.h
-│   ├── src/dsp.rs            # WSOLA 时间缩放 + 线性重采样变调 + 汉宁交叉淡化
-│   ├── src/render.rs         # UST + oto + 采样 → PCM（切片 / 变速 / 摆放 / 归一化）
-│   ├── src/wav.rs            # 最小 WAV 读写（PCM16 / float32，立体声下混）
-│   ├── src/ust.rs            # UST 解析（Setting / 音符 / PBS·PBW·PBY·PBM / Envelope / VBR）
-│   ├── src/oto.rs            # oto.ini 解析（offset / consonant / cutoff / pre / overlap）
-│   ├── src/text.rs           # 编码探测：UTF-8(BOM) 与 Shift-JIS
-│   ├── src/bin/nanofish-cli.rs # 命令行查看解析结果
-│   ├── include/nanofish.h    # 手写 C 头文件（与 ffi.rs 同步）
-│   ├── tests/data/           # UST / oto.ini 样例（含 Shift-JIS）
-│   ├── tests/parsers.rs      # 读盘 + 编码 + 解析的集成测试
-│   ├── tests/render_demo.rs  # UST → WAV 端到端测试（含合成音源）
-│   └── tests/ffi_smoke.c     # C 侧冒烟测试
-├── ColorfulVoice/
-│   ├── src/NanoFish.Interop/ # P/Invoke + AudioBuffer(IDisposable) + Span<float>
-│   ├── src/ColorfulVoice.UI/ # 共享 UI 库（App/主页/卷帘/波形）
-│   │   ├── Views/            # 主页、音源管理器
-│   │   └── Controls/         # 钢琴卷帘（Skia 自绘）+ 波形视图
-│   ├── src/ColorfulVoice.App/# 桌面头（Avalonia.Desktop）
-│   ├── src/ColorfulVoice.Android/# Android 头（Avalonia.Android）
-│   └── tests/NanoFish.Smoke/ # 端到端零拷贝验证
-└── scripts/                  # build.sh / sync-native.sh
+工作区/
+├── NanoFish/                  # Rust 引擎（独立仓库）
+│   ├── src/audio.rs           # 纯计算层（正弦波 / RMS，rayon 并行）
+│   ├── src/ffi.rs             # C ABI：指针 + 长度，所有权交给宿主
+│   ├── src/player.rs          # 原生播放器（miniaudio，null 后端回退）
+│   ├── src/audio_shim.c       # miniaudio C 封装（环形缓冲 + 设备回调）
+│   ├── src/dsp.rs             # WSOLA 时间缩放 + 线性重采样变调 + 汉宁交叉淡化
+│   ├── src/render.rs          # UST + oto + 采样 → PCM（切片 / 变速 / 摆放 / 归一化）
+│   ├── src/voicebank.rs       # 音素器（CV/VCV/CVVC、注音、presamp）
+│   ├── src/ust.rs / oto.rs    # UST 与 oto.ini 解析
+│   ├── include/nanofish.h     # C 头文件（与 ffi.rs 同步）
+│   └── scripts/               # Android 交叉编译
+└── ColorfulVoice/             # 本仓库
+    ├── src/NanoFish.Interop/  # P/Invoke + AudioBuffer(IDisposable) + Span<float>
+    ├── src/ColorfulVoice.UI/  # 共享 UI 库（App/主页/卷帘/波形）
+    ├── src/ColorfulVoice.App/ # 桌面头（Avalonia.Desktop）
+    ├── src/ColorfulVoice.Android/
+    ├── tests/ColorfulVoice.Headless/
+    ├── docs/                  # 截图与 Android 说明
+    ├── docker/                # Android 打包环境
+    └── scripts/               # build.sh / sync-native.sh
 ```
 
 ## 零拷贝契约
@@ -406,8 +399,8 @@ ColorfulVoice.Android   Android 入口（Avalonia.Android，MainActivity + Manif
 有 Docker 的机器上：
 
 ```bash
-docker build -f docker/Dockerfile.android -t novavoice-android .
-docker run --rm -v "$PWD":/src novavoice-android ./scripts/build-android.sh
+docker build -f docker/Dockerfile.android -t colorfulvoice-android .
+docker run --rm -v "$PWD":/src colorfulvoice-android ./scripts/build-android.sh
 ```
 
 ## 音源导入与音素器（Phase 2.1+）

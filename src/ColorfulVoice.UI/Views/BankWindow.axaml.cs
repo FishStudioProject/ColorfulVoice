@@ -173,7 +173,7 @@ public partial class BankWindow : UserControl
         try
         {
             var zipPath = await Services.FileStaging.StageReadAsync(files[0]);
-            var target = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "novavoice-banks",
+            var target = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "colorfulvoice-banks",
                 System.IO.Path.GetFileNameWithoutExtension(files[0].Name));
             System.IO.Directory.CreateDirectory(target);
             System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, target, overwriteFiles: true);

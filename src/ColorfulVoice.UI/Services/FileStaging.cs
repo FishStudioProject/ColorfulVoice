@@ -15,7 +15,7 @@ public static class FileStaging
     {
         get
         {
-            var dir = Path.Combine(Path.GetTempPath(), "novavoice-import");
+            var dir = Path.Combine(Path.GetTempPath(), "colorfulvoice-import");
             Directory.CreateDirectory(dir);
             return dir;
         }
