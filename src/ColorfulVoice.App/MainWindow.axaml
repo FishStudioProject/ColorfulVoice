@@ -15,9 +15,12 @@
                    Text="NanoFish 引擎握手验证"
                    FontSize="12" Foreground="#8E8E9A" />
       </StackPanel>
-      <TextBlock Grid.Column="1" VerticalAlignment="Center"
-                 FontSize="12" Foreground="#4FD1C5"
-                 Text="Skia 自绘 · 零拷贝 PCM" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+        <Button x:Name="OpenUstButton" Content="打开 UST…" Click="OnOpenUstClick" Padding="12,6" />
+        <TextBlock VerticalAlignment="Center"
+                   FontSize="12" Foreground="#4FD1C5"
+                   Text="Skia 自绘 · 零拷贝 PCM" />
+      </StackPanel>
     </Grid>
 
     <TabControl Grid.Row="1" Padding="0">

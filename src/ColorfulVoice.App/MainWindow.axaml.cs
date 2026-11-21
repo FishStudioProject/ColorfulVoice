@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using ColorfulVoice.Controls;
 using NanoFish.Interop;
 
@@ -42,6 +44,49 @@ public partial class MainWindow : Window
                 NoteNum = pitches[i],
                 Lyric = lyrics[i],
             });
+        }
+    }
+
+    private async void OnOpenUstClick(object? sender, RoutedEventArgs e)
+    {
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "打开 UST 工程",
+            AllowMultiple = false,
+            FileTypeFilter = new[] { new FilePickerFileType("UST 工程") { Patterns = new[] { "*.ust" } } },
+        });
+        if (files.Count > 0)
+        {
+            OpenUst(files[0].Path.LocalPath);
+        }
+    }
+
+    /// <summary>从磁盘加载 UST（解析在 Rust 侧完成，经 FFI 取回扁平音符表）。</summary>
+    public void OpenUst(string path)
+    {
+        try
+        {
+            var doc = UstLoader.Load(path);
+            _notes.Clear();
+            var id = 0;
+            foreach (var n in doc.Notes)
+            {
+                _notes.Add(new PianoNote
+                {
+                    Id = id++,
+                    StartTick = n.StartTick,
+                    LengthTicks = n.LengthTicks,
+                    NoteNum = n.NoteNum,
+                    Lyric = n.IsRest ? "R" : n.Lyric,
+                });
+            }
+            Roll.FitToNotes();
+            SubtitleText.Text = $"{System.IO.Path.GetFileName(path)} · {doc.Notes.Count} 个音符 · Tempo {doc.Tempo:0.##}";
+            StatusText.Text = $"已加载 {doc.Notes.Count} 个音符（Rust 解析：UTF-8 / Shift-JIS、UST2.0 均支持）";
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"加载失败：{ex.Message}";
         }
     }
 

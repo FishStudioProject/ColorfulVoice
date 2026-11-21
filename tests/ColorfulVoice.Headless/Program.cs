@@ -21,6 +21,10 @@ AppBuilder.Configure<App>()
 
 var window = new MainWindow { Width = 1080, Height = 640 };
 window.Show();
+if (args.Length > 1)
+{
+    window.OpenUst(args[1]);
+}
 
 // 推进布局 + 渲染定时器，确保绘制真的发生
 Dispatcher.UIThread.RunJobs();
